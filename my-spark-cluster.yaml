@@ -1,0 +1,8 @@
+apiVersion: "radanalytics.redhat.com/v1"
+kind: SparkCluster
+metadata:
+  name: testcluster
+spec:
+  image: radanalyticsio/openshift-spark:2.2-latest
+  workers: 3
+  spark_metrics_on: true
