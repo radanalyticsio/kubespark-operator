@@ -2,11 +2,9 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="5f456487-dff1-4f27-9971-8bbe310b422d" name="Default" comment="">
-      <change beforePath="" afterPath="$PROJECT_DIR$/test-add.go" />
+      <change beforePath="" afterPath="$PROJECT_DIR$/authentication/authentication.go" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change beforePath="$PROJECT_DIR$/crd/SparkClusterCRD.go" afterPath="$PROJECT_DIR$/crd/SparkClusterCRD.go" />
       <change beforePath="$PROJECT_DIR$/kube-crd.go" afterPath="$PROJECT_DIR$/kube-crd.go" />
-      <change beforePath="$PROJECT_DIR$/my-spark-cluster.yaml" afterPath="$PROJECT_DIR$/my-spark-cluster.yaml" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -42,7 +40,7 @@
       <file leaf-file-name="SparkClusterCRD.go" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/crd/SparkClusterCRD.go">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="104">
+            <state relative-caret-position="1008">
               <caret line="56" column="65" lean-forward="false" selection-start-line="56" selection-start-column="65" selection-end-line="56" selection-end-column="65" />
               <folding>
                 <element signature="e#13#431#0" expanded="true" />
@@ -54,10 +52,22 @@
       <file leaf-file-name="kube-crd.go" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/kube-crd.go">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="666">
-              <caret line="89" column="0" lean-forward="true" selection-start-line="89" selection-start-column="0" selection-end-line="89" selection-end-column="0" />
+            <state relative-caret-position="504">
+              <caret line="88" column="16" lean-forward="false" selection-start-line="88" selection-start-column="16" selection-end-line="89" selection-end-column="58" />
               <folding>
-                <element signature="e#581#997#0" expanded="true" />
+                <element signature="e#581#995#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="authentication.go" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/authentication/authentication.go">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="608">
+              <caret line="64" column="5" lean-forward="false" selection-start-line="64" selection-start-column="5" selection-end-line="64" selection-end-column="5" />
+              <folding>
+                <element signature="e#24#435#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -87,7 +97,7 @@
         <entry file="file://$PROJECT_DIR$/my-spark-cluster.yaml">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="90">
-              <caret line="5" column="50" lean-forward="true" selection-start-line="5" selection-start-column="9" selection-end-line="5" selection-end-column="50" />
+              <caret line="5" column="50" lean-forward="false" selection-start-line="5" selection-start-column="9" selection-end-line="5" selection-end-column="50" />
               <folding />
             </state>
           </provider>
@@ -120,6 +130,8 @@
         <option value="$PROJECT_DIR$/my-spark-cluster.yaml" />
         <option value="$PROJECT_DIR$/test-add.go" />
         <option value="$PROJECT_DIR$/crd/SparkClusterCRD.go" />
+        <option value="$PROJECT_DIR$/kubeauth/auth.go" />
+        <option value="$PROJECT_DIR$/authentication/authentication.go" />
         <option value="$PROJECT_DIR$/kube-crd.go" />
       </list>
     </option>
@@ -161,6 +173,11 @@
             <path>
               <item name="sparkcluster-crd" type="b2602c69:ProjectViewProjectNode" />
               <item name="sparkcluster-crd" type="462c0819:PsiDirectoryNode" />
+              <item name="authentication" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="sparkcluster-crd" type="b2602c69:ProjectViewProjectNode" />
+              <item name="sparkcluster-crd" type="462c0819:PsiDirectoryNode" />
               <item name="client" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
@@ -178,6 +195,13 @@
               <item name="sparkcluster-crd" type="462c0819:PsiDirectoryNode" />
               <item name="vendor" type="462c0819:PsiDirectoryNode" />
               <item name="github.com" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="sparkcluster-crd" type="b2602c69:ProjectViewProjectNode" />
+              <item name="sparkcluster-crd" type="462c0819:PsiDirectoryNode" />
+              <item name="vendor" type="462c0819:PsiDirectoryNode" />
+              <item name="github.com" type="462c0819:PsiDirectoryNode" />
+              <item name="openshift" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="sparkcluster-crd" type="b2602c69:ProjectViewProjectNode" />
@@ -283,7 +307,7 @@
       <breakpoints>
         <line-breakpoint enabled="true" type="DlvLineBreakpoint">
           <url>file://$PROJECT_DIR$/kube-crd.go</url>
-          <line>84</line>
+          <line>85</line>
           <properties />
           <option name="timeStamp" value="1" />
         </line-breakpoint>
@@ -320,18 +344,8 @@
     <entry file="file://$PROJECT_DIR$/my-spark-cluster.yaml">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="90">
-          <caret line="5" column="50" lean-forward="true" selection-start-line="5" selection-start-column="9" selection-end-line="5" selection-end-column="50" />
+          <caret line="5" column="50" lean-forward="false" selection-start-line="5" selection-start-column="9" selection-end-line="5" selection-end-column="50" />
           <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/crd/SparkClusterCRD.go">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="104">
-          <caret line="56" column="65" lean-forward="false" selection-start-line="56" selection-start-column="65" selection-end-line="56" selection-end-column="65" />
-          <folding>
-            <element signature="e#13#431#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -361,12 +375,32 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/crd/SparkClusterCRD.go">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1008">
+          <caret line="56" column="65" lean-forward="false" selection-start-line="56" selection-start-column="65" selection-end-line="56" selection-end-column="65" />
+          <folding>
+            <element signature="e#13#431#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/authentication/authentication.go">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="608">
+          <caret line="64" column="5" lean-forward="false" selection-start-line="64" selection-start-column="5" selection-end-line="64" selection-end-column="5" />
+          <folding>
+            <element signature="e#24#435#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/kube-crd.go">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="666">
-          <caret line="89" column="0" lean-forward="true" selection-start-line="89" selection-start-column="0" selection-end-line="89" selection-end-column="0" />
+        <state relative-caret-position="504">
+          <caret line="88" column="16" lean-forward="false" selection-start-line="88" selection-start-column="16" selection-end-line="89" selection-end-column="58" />
           <folding>
-            <element signature="e#581#997#0" expanded="true" />
+            <element signature="e#581#995#0" expanded="true" />
           </folding>
         </state>
       </provider>
