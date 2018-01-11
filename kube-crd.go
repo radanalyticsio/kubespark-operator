@@ -20,16 +20,15 @@ import (
 	"time"
 	"github.com/zmhassan/sparkcluster-crd/client"
 	"github.com/zmhassan/sparkcluster-crd/crd"
-	"github.com/zmhassan/sparkcluster-crd/authentication"
 	apiextcs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/clientcmd"
 	"flag"
-	"github.com/radanalyticsio/oshinko-cli/core/clusters"
+	//"github.com/radanalyticsio/oshinko-cli/core/clusters"
 
 	"os"
-	"io"
+	//"io"
 )
 
 // return rest config, if path not specified assume in cluster config
@@ -85,12 +84,12 @@ func main() {
 			AddFunc: func(obj interface{}) {
 				fmt.Printf("add: %s \n", obj)
 				cls:=obj.(*crd.SparkCluster)
-				config := clusters.ClusterConfig{}
-				oclient, _:=authentication.GetOpenShiftClient()
-				kclient, _:=authentication.GetKubeClient()
+				//config := clusters.ClusterConfig{}
 
-				clusters.CreateCluster("sparkit", "default", "radanalyticsio/openshift-spark:2.2-latest",
-					&config, oclient , kclient , "sparkit", false)
+
+
+				//clusters.CreateCluster("sparkit", "default", "radanalyticsio/openshift-spark:2.2-latest",
+				//	&config,  nil, config, "sparkit", false)
 
 				fmt.Println("Image is: ", cls.Spec.Image)
 				fmt.Println("Workers is: ", cls.Spec.Workers)
