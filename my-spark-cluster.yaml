@@ -1,7 +1,7 @@
 apiVersion: "radanalytics.redhat.com/v1"
 kind: SparkCluster
 metadata:
-  name: testcluster
+  name: trevor
 spec:
   image: radanalyticsio/openshift-spark:2.2-latest
   workers: 3

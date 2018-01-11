@@ -18,18 +18,17 @@ package main
 import (
 	"fmt"
 	"time"
-
 	"github.com/zmhassan/sparkcluster-crd/client"
 	"github.com/zmhassan/sparkcluster-crd/crd"
-
 	apiextcs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
-	apierrors "k8s.io/apimachinery/pkg/api/errors"
-	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/clientcmd"
 	"flag"
+	"github.com/radanalyticsio/oshinko-cli/core/clusters"
+	"github.com/radanalyticsio/oshinko-cli/pkg/cmd/cli/auth"
 	"os"
+	"io"
 )
 
 // return rest config, if path not specified assume in cluster config
@@ -75,55 +74,8 @@ func main() {
 	// Create a CRD client interface
 	crdclient := client.CrdClient(crdcs, scheme, "default")
 
-	sparkCluster :=&crd.SparkCluster{ObjectMeta:meta_v1.ObjectMeta{
-		Name: "sparkle",
-		Labels: map[string]string{"crdapp":"sparkcluster"},
-		},
-		Spec: crd.SparkClusterSpec{
-			Image: "radanalyticsio/openshift-spark:2.2-latest",
-			Workers: 3,
-			SparkMetricsOn: true,
-		},
-		Status:crd.SparkClusterStatus{
-			State:   "created",
-			Message: "Created, not processed yet",
-		},
-	}
 
-	// Create a new Example object and write to k8s
-	//example := &crd.Example{
-	//	ObjectMeta: meta_v1.ObjectMeta{
-	//		Name:   "example123",
-	//		Labels: map[string]string{"mylabel": "test"},
-	//	},
-	//	Spec: crd.ExampleSpec{
-	//		Foo: "example-text",
-	//		Bar: true,
-	//	},
-	//	Status: crd.ExampleStatus{
-	//		State:   "created",
-	//		Message: "Created, not processed yet",
-	//	},
-	//}
-
-	result, err := crdclient.Create(sparkCluster)
-	if err == nil {
-		fmt.Printf("CREATED: %#v\n", result)
-	} else if apierrors.IsAlreadyExists(err) {
-		fmt.Printf("ALREADY EXISTS: %#v\n", result)
-	} else {
-		panic(err)
-	}
-	fmt.Println("Msg: Listing out objects")
-	// List all Example objects
-	items, err := crdclient.List(meta_v1.ListOptions{})
-	if err != nil {
-		panic(err)
-	}
-	fmt.Printf("List:\n%s\n", items)
-
-	// Example Controller
-	// Watch for changes in Example objects and fire Add, Delete, Update callbacks
+	// Watch for changes in Spark objects and fire Add, Delete, Update callbacks
 	_, controller := cache.NewInformer(
 		crdclient.NewListWatch(),
 		&crd.SparkCluster{},
@@ -131,9 +83,23 @@ func main() {
 		cache.ResourceEventHandlerFuncs{
 			AddFunc: func(obj interface{}) {
 				fmt.Printf("add: %s \n", obj)
+				cls:=obj.(*crd.SparkCluster)
+				config := clusters.ClusterConfig{}
+
+				authOptions := &auth.AuthOptions{}
+
+				clusters.CreateCluster("sparkit", "default", "radanalyticsio/openshift-spark:2.2-latest",
+					&config, auth., o.KClient, "sparkit", false)
+
+				fmt.Println("Image is: ", cls.Spec.Image)
+				fmt.Println("Workers is: ", cls.Spec.Workers)
+				fmt.Println("SparkMetricsON is: ", cls.Spec.SparkMetricsOn)
+				//TODO: Create logic here that will create the necessary pods that would compose of a spark cluster.
+
 			},
 			DeleteFunc: func(obj interface{}) {
 				fmt.Printf("delete: %s \n", obj)
+
 			},
 			UpdateFunc: func(oldObj, newObj interface{}) {
 				fmt.Printf("Update old: %s \n      New: %s\n", oldObj, newObj)

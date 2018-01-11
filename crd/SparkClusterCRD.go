@@ -54,10 +54,11 @@ type SparkClusterStatus struct{
 	Message string `json:"message,omitempty"`
 }
 
+// TODO: Following same format as ClusterConfig.go in oshinko-cli
 type SparkClusterSpec struct{
 	Image string `json"image"`
 	Workers int `json:"workers"`
-	SparkMetricsOn bool `json:"spark_metrics_on"`
+	SparkMetricsOn bool `json:"sparkmetrics"`
 }
 
 type SparkClusterList struct {
