@@ -16,7 +16,6 @@ limitations under the License.
 package main
 
 import (
-	"fmt"
 	"time"
 	"github.com/zmhassan/sparkcluster-crd/client"
 	"github.com/zmhassan/sparkcluster-crd/crd"
@@ -30,7 +29,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/api/core/v1"
 	"flag"
-
+	"log"
 	"os"
 	//"io"
 )
@@ -62,7 +61,7 @@ func main() {
 	// note: if the CRD exist our CreateCRD function is set to exit without an error
 	err = crd.CreateCRD(clientset)
 	if err != nil {
-		fmt.Println("Msg: CRD Already Exists")
+		log.Println("Msg: CRD Already Exists")
 		panic(err)
 	}
 
@@ -87,7 +86,7 @@ func main() {
 		time.Minute*10,
 		cache.ResourceEventHandlerFuncs{
 			AddFunc: func(obj interface{}) {
-				fmt.Printf("add: %s \n", obj)
+				log.Printf("add: %s \n", obj)
 				cls:=obj.(*crd.SparkCluster)
 
 				//CreateCluster()
@@ -97,18 +96,18 @@ func main() {
 				//clusters.CreateCluster("sparkit", "default", "radanalyticsio/openshift-spark:2.2-latest",
 				//	&config,  nil, config, "sparkit", false)
 
-				fmt.Println("Image is: ", cls.Spec.Image)
-				fmt.Println("Workers is: ", cls.Spec.Workers)
-				fmt.Println("SparkMetricsON is: ", cls.Spec.SparkMetricsOn)
+				log.Println("Image is: ", cls.Spec.Image)
+				log.Println("Workers is: ", cls.Spec.Workers)
+				log.Println("SparkMetricsON is: ", cls.Spec.SparkMetricsOn)
 				//TODO: Create logic here that will create the necessary pods that would compose of a spark cluster.
 
 			},
 			DeleteFunc: func(obj interface{}) {
-				fmt.Printf("delete: %s \n", obj)
+				log.Printf("delete: %s \n", obj)
 
 			},
 			UpdateFunc: func(oldObj, newObj interface{}) {
-				fmt.Printf("Update old: %s \n      New: %s\n", oldObj, newObj)
+				log.Printf("Update old: %s \n      New: %s\n", oldObj, newObj)
 			},
 		},
 	)
@@ -120,130 +119,152 @@ func main() {
 	select {}
 }
 func CreateCluster(config *rest.Config, sparkConfig *crd.SparkCluster) {
-		clientset, err := kubernetes.NewForConfig(config)
-		if err != nil {
-			panic(err)
-		}
-		fmt.Println("~~~~~~~~~~~~~~~~~~~")
-		fmt.Println("Creating SparkCluster")
-		//Deploy Spark Master
-		CreateNewSparkMaster(clientset)
-		CreateNewSparkWorkers(clientset)
+	clientset, err := kubernetes.NewForConfig(config)
+	if err != nil {
+		panic(err)
+	}
+	log.Println("~~~~~~~~~~~~~~~~~~~")
+	log.Println("Creating SparkCluster")
+	//Deploy Spark Master
+	CreateNewSparkMaster(clientset)
+	CreateNewSparkWorkers(clientset)
 
+}
+
+// TODO: Pass in a clusterConfig which will contain properties
+
+type ClusterConfig struct {
+	MasterSvcURI string
+	ImageName string
+	PodName string
+	ContainerName string
+	ScaleNum int32
+	Labels map[string]string
+	EnvVar []apiv1.EnvVar
+	Ports []apiv1.ContainerPort
 }
 
 
 func CreateNewSparkWorkers( clientset *kubernetes.Clientset) {
 	deploymentsClient := clientset.AppsV1beta1().Deployments("myproject")
-	MASTER_SVC_URI := "sparkle-master-service"
+
+	clusterCfg:=ClusterConfig{
+		"sparkle-master-service",
+		"radanalyticsio/openshift-spark",
+		"spark-worker",
+		"spark-worker",
+		3,
+		map[string]string{
+			"app": "spark-worker",
+		},[]apiv1.EnvVar{
+			apiv1.EnvVar{
+				Name:  "SPARK_MASTER_ADDRESS",
+				Value: "spark://sparkle-master-service:7077",
+			},
+			apiv1.EnvVar{
+				Name:  "SPARK_METRICS_ON",
+				Value: "prometheus",
+			},
+			apiv1.EnvVar{
+				Name:  "SPARK_MASTER_UI_ADDRESS",
+				Value: "http://sparkle-master-service:8080",
+	}},nil}
+
+	deployment := CreatePod(clusterCfg)
+
+	log.Println("Running Deployment..")
+	result, err := deploymentsClient.Create(deployment)
+	if err != nil {
+		panic(err)
+	}
+	log.Printf("Created deployment %q.\n", result.GetObjectMeta().GetName())
+}
+
+// Generic Function for pod creations
+func CreatePod(config ClusterConfig) *appsv1beta1.Deployment {
 	deployment := &appsv1beta1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: "spark-worker",
+			Name: config.PodName,
 		},
 		Spec: appsv1beta1.DeploymentSpec{
-			Replicas: int32Ptr(3),
+			Replicas: int32Ptr(config.ScaleNum),
 			Template: apiv1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
-					Labels: map[string]string{
-						"app": "spark-worker",
-					},
+					Labels: config.Labels,
 				},
 				Spec: apiv1.PodSpec{
 					Containers: []apiv1.Container{
 						{
-							Name:  "spark-worker",
-							Image: "radanalyticsio/openshift-spark",
-							Env: []apiv1.EnvVar{
-								apiv1.EnvVar{
-									Name:  "SPARK_MASTER_UI_ADDRESS",
-									Value: "http://"+ MASTER_SVC_URI +":8080",
-								},
-								apiv1.EnvVar{
-									Name:  "SPARK_MASTER_ADDRESS",
-									Value: "spark://"+ MASTER_SVC_URI +":7077",
-								},
-								apiv1.EnvVar{
-									Name:  "SPARK_METRICS_ON",
-									Value: "true",
-								},
-							},
+							Name:  config.ContainerName,
+							Image: config.ImageName,
+							Env:   config.EnvVar,
 						},
 					},
 				},
 			},
 		},
 	}
-
-	fmt.Println("Running Deployment..")
-	result, err := deploymentsClient.Create(deployment)
-	if err != nil {
-		panic(err)
-	}
-	fmt.Printf("Created deployment %q.\n", result.GetObjectMeta().GetName())
+	return deployment
 }
 
 
 
 func CreateNewSparkMaster( clientset *kubernetes.Clientset ) {
 	deploymentsClient := clientset.AppsV1beta1().Deployments("myproject")
-	deployment := &appsv1beta1.Deployment{
-		ObjectMeta: metav1.ObjectMeta{
-			Name: "spark",
-		},
-		Spec: appsv1beta1.DeploymentSpec{
-			Replicas: int32Ptr(1),
-			Template: apiv1.PodTemplateSpec{
-				ObjectMeta: metav1.ObjectMeta{
-					Labels: map[string]string{
-						"app": "spark",
-					},
-				},
-				Spec: apiv1.PodSpec{
-					Containers: []apiv1.Container{
-						{
-							Name:  "spark",
-							Image: "radanalyticsio/openshift-spark",
-							Ports: []apiv1.ContainerPort{
-								{
-									Name:          "sparksubmit",
-									Protocol:      apiv1.ProtocolTCP,
-									ContainerPort: 7077,
-								},
-								{
-									Name:          "prometheus",
-									Protocol:      apiv1.ProtocolTCP,
-									ContainerPort: 7777,
-								},
-								{
-									Name:          "http",
-									Protocol:      apiv1.ProtocolTCP,
-									ContainerPort: 8080,
-								},
-							},
-							Env: []apiv1.EnvVar{
-								apiv1.EnvVar{
-									Name:  "SPARK_MASTER_PORT",
-									Value: "7077",
-								},
-								apiv1.EnvVar{
-									Name:  "SPARK_MASTER_WEBUI_PORT",
-									Value: "8080",
-								},
-								apiv1.EnvVar{
-									Name:  "SPARK_METRICS_ON",
-									Value: "true",
-								},
-							},
-						},
-					},
-				},
+
+
+
+	clusterCfg:=ClusterConfig{
+		"sparkle-master-service",
+		"radanalyticsio/openshift-spark",
+		"spark-master",
+		"spark-master",
+		1,
+		map[string]string{
+			"app": "spark",
+		},[]apiv1.EnvVar{
+			apiv1.EnvVar{
+				Name:  "SPARK_MASTER_PORT",
+				Value: "7077",
 			},
-		},
+			apiv1.EnvVar{
+				Name:  "SPARK_MASTER_WEBUI_PORT",
+				Value: "8080",
+			},
+			apiv1.EnvVar{
+				Name:  "SPARK_METRICS_ON",
+				Value: "prometheus",
+			}},[]apiv1.ContainerPort{
+			{
+				Name:          "sparksubmit",
+				Protocol:      apiv1.ProtocolTCP,
+				ContainerPort: 7077,
+			},
+			{
+				Name:          "prometheus",
+				Protocol:      apiv1.ProtocolTCP,
+				ContainerPort: 7777,
+			},
+			{
+				Name:          "http",
+				Protocol:      apiv1.ProtocolTCP,
+				ContainerPort: 8080,
+			},
+		}}
+	log.Println("Running Deployment..")
+	deployment := CreatePod(clusterCfg)
+	result, err := deploymentsClient.Create(deployment)
+	if err != nil {
+		panic(err)
 	}
-	//Creating SparkMaster KubeService
-	service := &v1.Service{
+	log.Printf("Created deployment %q.\n", result.GetObjectMeta().GetName())
+	CreateSparkClusterService(clusterCfg, clientset)
+}
+func CreateSparkClusterService(clusterCfg ClusterConfig, clientset *kubernetes.Clientset )   {
+
+	service:= &v1.Service{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: fmt.Sprintf("%v-master-service", "sparkle"),
+			Name: clusterCfg.MasterSvcURI,
 			Labels: map[string]string{
 				"app": "spark",
 			},
@@ -252,7 +273,7 @@ func CreateNewSparkMaster( clientset *kubernetes.Clientset ) {
 		Spec: v1.ServiceSpec{
 			Type:      "ClusterIP",
 			ClusterIP: "None",
-			Selector:   map[string]string{
+			Selector: map[string]string{
 				"app": "spark",
 			},
 			Ports: []v1.ServicePort{{
@@ -267,17 +288,13 @@ func CreateNewSparkMaster( clientset *kubernetes.Clientset ) {
 			}},
 		},
 	}
-	fmt.Println("Running Deployment..")
-	result, err := deploymentsClient.Create(deployment)
-	if err != nil {
-		panic(err)
-	}
-	fmt.Printf("Created deployment %q.\n", result.GetObjectMeta().GetName())
+
 	svc_result, svc_err := clientset.CoreV1().Services("myproject").Create(service)
 	if svc_err != nil {
 		panic(svc_err)
 	}
-	fmt.Printf("Created Service %q.\n", svc_result.GetObjectMeta().GetName())
+	log.Printf("Created Service %q.\n", svc_result.GetObjectMeta().GetName())
+
 }
 
 func int32Ptr(i int32) *int32 { return &i }
