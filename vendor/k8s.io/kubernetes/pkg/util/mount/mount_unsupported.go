@@ -18,7 +18,18 @@ limitations under the License.
 
 package mount
 
-type Mounter struct{}
+type Mounter struct {
+	mounterPath string
+}
+
+// New returns a mount.Interface for the current system.
+// It provides options to override the default mounter behavior.
+// mounterPath allows using an alternative to `/bin/mount` for mounting.
+func New(mounterPath string) Interface {
+	return &Mounter{
+		mounterPath: mounterPath,
+	}
+}
 
 func (mounter *Mounter) Mount(source string, target string, fstype string, options []string) error {
 	return nil
@@ -30,6 +41,14 @@ func (mounter *Mounter) Unmount(target string) error {
 
 func (mounter *Mounter) List() ([]MountPoint, error) {
 	return []MountPoint{}, nil
+}
+
+func (mounter *Mounter) IsMountPointMatch(mp MountPoint, dir string) bool {
+	return (mp.Path == dir)
+}
+
+func (mounter *Mounter) IsNotMountPoint(dir string) (bool, error) {
+	return IsNotMountPoint(mounter, dir)
 }
 
 func (mounter *Mounter) IsLikelyNotMountPoint(file string) (bool, error) {

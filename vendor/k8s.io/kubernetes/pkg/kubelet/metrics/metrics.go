@@ -26,19 +26,28 @@ import (
 )
 
 const (
-	KubeletSubsystem              = "kubelet"
-	PodWorkerLatencyKey           = "pod_worker_latency_microseconds"
-	SyncPodsLatencyKey            = "sync_pods_latency_microseconds"
-	PodStartLatencyKey            = "pod_start_latency_microseconds"
-	PodStatusLatencyKey           = "generate_pod_status_latency_microseconds"
-	ContainerManagerOperationsKey = "container_manager_latency_microseconds"
-	DockerOperationsLatencyKey    = "docker_operations_latency_microseconds"
-	DockerOperationsKey           = "docker_operations"
-	DockerOperationsErrorsKey     = "docker_operations_errors"
-	DockerOperationsTimeoutKey    = "docker_operations_timeout"
-	PodWorkerStartLatencyKey      = "pod_worker_start_latency_microseconds"
-	PLEGRelistLatencyKey          = "pleg_relist_latency_microseconds"
-	PLEGRelistIntervalKey         = "pleg_relist_interval_microseconds"
+	KubeletSubsystem             = "kubelet"
+	PodWorkerLatencyKey          = "pod_worker_latency_microseconds"
+	PodStartLatencyKey           = "pod_start_latency_microseconds"
+	CgroupManagerOperationsKey   = "cgroup_manager_latency_microseconds"
+	DockerOperationsLatencyKey   = "docker_operations_latency_microseconds"
+	DockerOperationsKey          = "docker_operations"
+	DockerOperationsErrorsKey    = "docker_operations_errors"
+	DockerOperationsTimeoutKey   = "docker_operations_timeout"
+	PodWorkerStartLatencyKey     = "pod_worker_start_latency_microseconds"
+	PLEGRelistLatencyKey         = "pleg_relist_latency_microseconds"
+	PLEGRelistIntervalKey        = "pleg_relist_interval_microseconds"
+	EvictionStatsAgeKey          = "eviction_stats_age_microseconds"
+	VolumeStatsCapacityBytesKey  = "volume_stats_capacity_bytes"
+	VolumeStatsAvailableBytesKey = "volume_stats_available_bytes"
+	VolumeStatsUsedBytesKey      = "volume_stats_used_bytes"
+	VolumeStatsInodesKey         = "volume_stats_inodes"
+	VolumeStatsInodesFreeKey     = "volume_stats_inodes_free"
+	VolumeStatsInodesUsedKey     = "volume_stats_inodes_used"
+	// Metrics keys of remote runtime operations
+	RuntimeOperationsKey        = "runtime_operations"
+	RuntimeOperationsLatencyKey = "runtime_operations_latency_microseconds"
+	RuntimeOperationsErrorsKey  = "runtime_operations_errors"
 )
 
 var (
@@ -57,13 +66,6 @@ var (
 		},
 		[]string{"operation_type"},
 	)
-	SyncPodsLatency = prometheus.NewSummary(
-		prometheus.SummaryOpts{
-			Subsystem: KubeletSubsystem,
-			Name:      SyncPodsLatencyKey,
-			Help:      "Latency in microseconds to sync all pods.",
-		},
-	)
 	PodStartLatency = prometheus.NewSummary(
 		prometheus.SummaryOpts{
 			Subsystem: KubeletSubsystem,
@@ -71,18 +73,11 @@ var (
 			Help:      "Latency in microseconds for a single pod to go from pending to running. Broken down by podname.",
 		},
 	)
-	PodStatusLatency = prometheus.NewSummary(
+	CgroupManagerLatency = prometheus.NewSummaryVec(
 		prometheus.SummaryOpts{
 			Subsystem: KubeletSubsystem,
-			Name:      PodStatusLatencyKey,
-			Help:      "Latency in microseconds to generate status for a single pod.",
-		},
-	)
-	ContainerManagerLatency = prometheus.NewSummaryVec(
-		prometheus.SummaryOpts{
-			Subsystem: KubeletSubsystem,
-			Name:      ContainerManagerOperationsKey,
-			Help:      "Latency in microseconds for container manager operations. Broken down by method.",
+			Name:      CgroupManagerOperationsKey,
+			Help:      "Latency in microseconds for cgroup manager operations. Broken down by method.",
 		},
 		[]string{"operation_type"},
 	)
@@ -93,6 +88,7 @@ var (
 			Help:      "Latency in microseconds from seeing a pod to starting a worker.",
 		},
 	)
+	// TODO(random-liu): Move the following docker metrics into shim once dockertools is deprecated.
 	DockerOperationsLatency = prometheus.NewSummaryVec(
 		prometheus.SummaryOpts{
 			Subsystem: KubeletSubsystem,
@@ -139,6 +135,87 @@ var (
 			Help:      "Interval in microseconds between relisting in PLEG.",
 		},
 	)
+	// Metrics of remote runtime operations.
+	RuntimeOperations = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Subsystem: KubeletSubsystem,
+			Name:      RuntimeOperationsKey,
+			Help:      "Cumulative number of runtime operations by operation type.",
+		},
+		[]string{"operation_type"},
+	)
+	RuntimeOperationsLatency = prometheus.NewSummaryVec(
+		prometheus.SummaryOpts{
+			Subsystem: KubeletSubsystem,
+			Name:      RuntimeOperationsLatencyKey,
+			Help:      "Latency in microseconds of runtime operations. Broken down by operation type.",
+		},
+		[]string{"operation_type"},
+	)
+	RuntimeOperationsErrors = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Subsystem: KubeletSubsystem,
+			Name:      RuntimeOperationsErrorsKey,
+			Help:      "Cumulative number of runtime operation errors by operation type.",
+		},
+		[]string{"operation_type"},
+	)
+	EvictionStatsAge = prometheus.NewSummaryVec(
+		prometheus.SummaryOpts{
+			Subsystem: KubeletSubsystem,
+			Name:      EvictionStatsAgeKey,
+			Help:      "Time between when stats are collected, and when pod is evicted based on those stats by eviction signal",
+		},
+		[]string{"eviction_signal"},
+	)
+	VolumeStatsCapacityBytes = prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Subsystem: KubeletSubsystem,
+			Name:      VolumeStatsCapacityBytesKey,
+			Help:      "Capacity in bytes of the volume",
+		},
+		[]string{"namespace", "persistentvolumeclaim"},
+	)
+	VolumeStatsAvailableBytes = prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Subsystem: KubeletSubsystem,
+			Name:      VolumeStatsAvailableBytesKey,
+			Help:      "Number of available bytes in the volume",
+		},
+		[]string{"namespace", "persistentvolumeclaim"},
+	)
+	VolumeStatsUsedBytes = prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Subsystem: KubeletSubsystem,
+			Name:      VolumeStatsUsedBytesKey,
+			Help:      "Number of used bytes in the volume",
+		},
+		[]string{"namespace", "persistentvolumeclaim"},
+	)
+	VolumeStatsInodes = prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Subsystem: KubeletSubsystem,
+			Name:      VolumeStatsInodesKey,
+			Help:      "Maximum number of inodes in the volume",
+		},
+		[]string{"namespace", "persistentvolumeclaim"},
+	)
+	VolumeStatsInodesFree = prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Subsystem: KubeletSubsystem,
+			Name:      VolumeStatsInodesFreeKey,
+			Help:      "Number of free inodes in the volume",
+		},
+		[]string{"namespace", "persistentvolumeclaim"},
+	)
+	VolumeStatsInodesUsed = prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Subsystem: KubeletSubsystem,
+			Name:      VolumeStatsInodesUsedKey,
+			Help:      "Number of used inodes in the volume",
+		},
+		[]string{"namespace", "persistentvolumeclaim"},
+	)
 )
 
 var registerMetrics sync.Once
@@ -149,10 +226,8 @@ func Register(containerCache kubecontainer.RuntimeCache) {
 	registerMetrics.Do(func() {
 		prometheus.MustRegister(PodWorkerLatency)
 		prometheus.MustRegister(PodStartLatency)
-		prometheus.MustRegister(PodStatusLatency)
 		prometheus.MustRegister(DockerOperationsLatency)
-		prometheus.MustRegister(ContainerManagerLatency)
-		prometheus.MustRegister(SyncPodsLatency)
+		prometheus.MustRegister(CgroupManagerLatency)
 		prometheus.MustRegister(PodWorkerStartLatency)
 		prometheus.MustRegister(ContainersPerPodCount)
 		prometheus.MustRegister(DockerOperations)
@@ -161,6 +236,16 @@ func Register(containerCache kubecontainer.RuntimeCache) {
 		prometheus.MustRegister(newPodAndContainerCollector(containerCache))
 		prometheus.MustRegister(PLEGRelistLatency)
 		prometheus.MustRegister(PLEGRelistInterval)
+		prometheus.MustRegister(RuntimeOperations)
+		prometheus.MustRegister(RuntimeOperationsLatency)
+		prometheus.MustRegister(RuntimeOperationsErrors)
+		prometheus.MustRegister(EvictionStatsAge)
+		prometheus.MustRegister(VolumeStatsCapacityBytes)
+		prometheus.MustRegister(VolumeStatsAvailableBytes)
+		prometheus.MustRegister(VolumeStatsUsedBytes)
+		prometheus.MustRegister(VolumeStatsInodes)
+		prometheus.MustRegister(VolumeStatsInodesFree)
+		prometheus.MustRegister(VolumeStatsInodesUsed)
 	})
 }
 

@@ -1,8 +1,3 @@
-<!-- BEGIN MUNGE: UNVERSIONED_WARNING -->
-
-
-<!-- END MUNGE: UNVERSIONED_WARNING -->
-
 ## OpenShift Origin example
 
 This example shows how to run OpenShift Origin as a pod on an existing Kubernetes cluster.
@@ -30,7 +25,7 @@ $ vi cluster/saltbase/pillar/privilege.sls
 allow_privileged: true
 ```
 
-Now spin up a cluster using your preferred KUBERNETES_PROVIDER. Remember that `kube-up.sh` may start other pods on your minion nodes, so ensure that you have enough resources to run the five pods for this example.
+Now spin up a cluster using your preferred KUBERNETES_PROVIDER. Remember that `kube-up.sh` may start other pods on your nodes, so ensure that you have enough resources to run the five pods for this example.
 
 
 ```sh
@@ -99,14 +94,14 @@ You can automate the process with the following script, as it might take more th
 
 ```shell
 $ while [ ${#PUBLIC_OPENSHIFT_IP} -lt 1 ]; do
-  	echo -n .
-  	sleep 1
-  	{
-	  	export PUBLIC_OPENSHIFT_IP=$(kubectl get services openshift  --namespace="openshift-origin" --template="{{ index .status.loadBalancer.ingress 0 \"ip\" }}")
+	echo -n .
+	sleep 1
+	{
+		export PUBLIC_OPENSHIFT_IP=$(kubectl get services openshift  --namespace="openshift-origin" --template="{{ index .status.loadBalancer.ingress 0 \"ip\" }}")
 	  } 2> ${OPENSHIFT_EXAMPLE}/openshift-startup.log
 	  if [[ ! ${PUBLIC_OPENSHIFT_IP} =~ ^([0-9]{1,3}\.){3}[0-9]{1,3}$ ]]; then
 		  export PUBLIC_OPENSHIFT_IP=""
-  	fi
+	fi
   done
 $ echo
 $ echo "Public OpenShift IP set to: ${PUBLIC_OPENSHIFT_IP}"
@@ -209,13 +204,6 @@ Clean up your cluster from resources created with this example:
 ```sh
 $ ${OPENSHIFT_EXAMPLE}/cleanup.sh
 ```
-
-
-
-
-<!-- BEGIN MUNGE: IS_VERSIONED -->
-<!-- TAG IS_VERSIONED -->
-<!-- END MUNGE: IS_VERSIONED -->
 
 
 <!-- BEGIN MUNGE: GENERATED_ANALYTICS -->

@@ -19,58 +19,83 @@ package core
 import (
 	"fmt"
 	"strings"
+	"time"
 
-	"k8s.io/kubernetes/pkg/admission"
+	"k8s.io/apimachinery/pkg/api/resource"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+
+	"k8s.io/apimachinery/pkg/util/clock"
+	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/apimachinery/pkg/util/validation/field"
+	"k8s.io/apiserver/pkg/admission"
 	"k8s.io/kubernetes/pkg/api"
-	"k8s.io/kubernetes/pkg/api/resource"
+	"k8s.io/kubernetes/pkg/api/helper/qos"
+	"k8s.io/kubernetes/pkg/api/v1"
 	"k8s.io/kubernetes/pkg/api/validation"
-	clientset "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset"
-	"k8s.io/kubernetes/pkg/kubelet/qos"
+	"k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
+	informers "k8s.io/kubernetes/pkg/client/informers/informers_generated/externalversions"
 	"k8s.io/kubernetes/pkg/quota"
 	"k8s.io/kubernetes/pkg/quota/generic"
-	"k8s.io/kubernetes/pkg/runtime"
-	"k8s.io/kubernetes/pkg/util/sets"
-	"k8s.io/kubernetes/pkg/util/validation/field"
 )
 
-// NewPodEvaluator returns an evaluator that can evaluate pods
-func NewPodEvaluator(kubeClient clientset.Interface) quota.Evaluator {
-	computeResources := []api.ResourceName{
-		api.ResourceCPU,
-		api.ResourceMemory,
-		api.ResourceRequestsCPU,
-		api.ResourceRequestsMemory,
-		api.ResourceLimitsCPU,
-		api.ResourceLimitsMemory,
-	}
-	allResources := append(computeResources, api.ResourcePods)
-	return &generic.GenericEvaluator{
-		Name:              "Evaluator.Pod",
-		InternalGroupKind: api.Kind("Pod"),
-		InternalOperationResources: map[admission.Operation][]api.ResourceName{
-			admission.Create: allResources,
-			// TODO: the quota system can only charge for deltas on compute resources when pods support updates.
-			// admission.Update: computeResources,
-		},
-		GetFuncByNamespace: func(namespace, name string) (runtime.Object, error) {
-			return kubeClient.Core().Pods(namespace).Get(name)
-		},
-		ConstraintsFunc:      PodConstraintsFunc,
-		MatchedResourceNames: allResources,
-		MatchesScopeFunc:     PodMatchesScopeFunc,
-		UsageFunc:            PodUsageFunc,
-		ListFuncByNamespace: func(namespace string, options api.ListOptions) (runtime.Object, error) {
-			return kubeClient.Core().Pods(namespace).List(options)
-		},
+// podResources are the set of resources managed by quota associated with pods.
+var podResources = []api.ResourceName{
+	api.ResourceCPU,
+	api.ResourceMemory,
+	api.ResourceRequestsCPU,
+	api.ResourceRequestsMemory,
+	api.ResourceLimitsCPU,
+	api.ResourceLimitsMemory,
+	api.ResourcePods,
+}
+
+// listPodsByNamespaceFuncUsingClient returns a pod listing function based on the provided client.
+func listPodsByNamespaceFuncUsingClient(kubeClient clientset.Interface) generic.ListFuncByNamespace {
+	// TODO: ideally, we could pass dynamic client pool down into this code, and have one way of doing this.
+	// unfortunately, dynamic client works with Unstructured objects, and when we calculate Usage, we require
+	// structured objects.
+	return func(namespace string, options metav1.ListOptions) ([]runtime.Object, error) {
+		itemList, err := kubeClient.Core().Pods(namespace).List(options)
+		if err != nil {
+			return nil, err
+		}
+		results := make([]runtime.Object, 0, len(itemList.Items))
+		for i := range itemList.Items {
+			results = append(results, &itemList.Items[i])
+		}
+		return results, nil
 	}
 }
 
-// PodConstraintsFunc verifies that all required resources are present on the pod
+// NewPodEvaluator returns an evaluator that can evaluate pods
+// if the specified shared informer factory is not nil, evaluator may use it to support listing functions.
+func NewPodEvaluator(kubeClient clientset.Interface, f informers.SharedInformerFactory, clock clock.Clock) quota.Evaluator {
+	listFuncByNamespace := listPodsByNamespaceFuncUsingClient(kubeClient)
+	if f != nil {
+		listFuncByNamespace = generic.ListResourceUsingInformerFunc(f, v1.SchemeGroupVersion.WithResource("pods"))
+	}
+	return &podEvaluator{
+		listFuncByNamespace: listFuncByNamespace,
+		clock:               clock,
+	}
+}
+
+// podEvaluator knows how to measure usage of pods.
+type podEvaluator struct {
+	// knows how to list pods
+	listFuncByNamespace generic.ListFuncByNamespace
+	// used to track time
+	clock clock.Clock
+}
+
+// Constraints verifies that all required resources are present on the pod
 // In addition, it validates that the resources are valid (i.e. requests < limits)
-func PodConstraintsFunc(required []api.ResourceName, object runtime.Object) error {
-	pod, ok := object.(*api.Pod)
+func (p *podEvaluator) Constraints(required []api.ResourceName, item runtime.Object) error {
+	pod, ok := item.(*api.Pod)
 	if !ok {
-		return fmt.Errorf("Unexpected input object %v", object)
+		return fmt.Errorf("Unexpected input object %v", item)
 	}
 
 	// Pod level resources are often set during admission control
@@ -89,7 +114,7 @@ func PodConstraintsFunc(required []api.ResourceName, object runtime.Object) erro
 		return allErrs.ToAggregate()
 	}
 
-	// TODO: fix this when we have pod level cgroups
+	// TODO: fix this when we have pod level resource requirements
 	// since we do not yet pod level requests/limits, we need to ensure each
 	// container makes an explict request or limit for a quota tracked resource
 	requiredSet := quota.ToSet(required)
@@ -105,6 +130,41 @@ func PodConstraintsFunc(required []api.ResourceName, object runtime.Object) erro
 	}
 	return fmt.Errorf("must specify %s", strings.Join(missingSet.List(), ","))
 }
+
+// GroupKind that this evaluator tracks
+func (p *podEvaluator) GroupKind() schema.GroupKind {
+	return api.Kind("Pod")
+}
+
+// Handles returns true of the evaluator should handle the specified operation.
+func (p *podEvaluator) Handles(operation admission.Operation) bool {
+	// TODO: update this if/when pods support resizing resource requirements.
+	return admission.Create == operation
+}
+
+// Matches returns true if the evaluator matches the specified quota with the provided input item
+func (p *podEvaluator) Matches(resourceQuota *api.ResourceQuota, item runtime.Object) (bool, error) {
+	return generic.Matches(resourceQuota, item, p.MatchingResources, podMatchesScopeFunc)
+}
+
+// MatchingResources takes the input specified list of resources and returns the set of resources it matches.
+func (p *podEvaluator) MatchingResources(input []api.ResourceName) []api.ResourceName {
+	return quota.Intersection(input, podResources)
+}
+
+// Usage knows how to measure usage associated with pods
+func (p *podEvaluator) Usage(item runtime.Object) (api.ResourceList, error) {
+	// delegate to normal usage
+	return PodUsageFunc(item, p.clock)
+}
+
+// UsageStats calculates aggregate usage for the object.
+func (p *podEvaluator) UsageStats(options quota.UsageStatsOptions) (quota.UsageStats, error) {
+	return generic.CalculateUsageStats(options, p.listFuncByNamespace, podMatchesScopeFunc, p.Usage)
+}
+
+// verifies we implement the required interface.
+var _ quota.Evaluator = &podEvaluator{}
 
 // enforcePodContainerConstraints checks for required resources that are not set on this container and
 // adds them to missingSet.
@@ -140,23 +200,60 @@ func podUsageHelper(requests api.ResourceList, limits api.ResourceList) api.Reso
 	return result
 }
 
-// PodUsageFunc knows how to measure usage associated with pods
-func PodUsageFunc(object runtime.Object) api.ResourceList {
-	pod, ok := object.(*api.Pod)
-	if !ok {
-		return api.ResourceList{}
+func toInternalPodOrError(obj runtime.Object) (*api.Pod, error) {
+	switch t := obj.(type) {
+	case *v1.Pod:
+		converted, err := api.Scheme.ConvertToVersion(obj, api.SchemeGroupVersion)
+		if err != nil {
+			return nil, err
+		}
+		if pod, ok := converted.(*api.Pod); ok {
+			return pod, nil
+		} else {
+			return nil, fmt.Errorf("expect *api.Pod, got %v", converted)
+		}
+	case *api.Pod:
+		return t, nil
+	default:
+		return nil, fmt.Errorf("expect *api.Pod or *v1.Pod, got %v", t)
 	}
+}
 
-	// by convention, we do not quota pods that have reached an end-of-life state
-	if !QuotaPod(pod) {
-		return api.ResourceList{}
+// podMatchesScopeFunc is a function that knows how to evaluate if a pod matches a scope
+func podMatchesScopeFunc(scope api.ResourceQuotaScope, object runtime.Object) (bool, error) {
+	pod, err := toInternalPodOrError(object)
+	if err != nil {
+		return false, err
 	}
+	switch scope {
+	case api.ResourceQuotaScopeTerminating:
+		return isTerminating(pod), nil
+	case api.ResourceQuotaScopeNotTerminating:
+		return !isTerminating(pod), nil
+	case api.ResourceQuotaScopeBestEffort:
+		return isBestEffort(pod), nil
+	case api.ResourceQuotaScopeNotBestEffort:
+		return !isBestEffort(pod), nil
+	}
+	return false, nil
+}
 
-	// TODO: fix this when we have pod level cgroups
-	// when we have pod level cgroups, we can just read pod level requests/limits
+// PodUsageFunc returns the quota usage for a pod.
+// A pod is charged for quota if the following are not true.
+//  - pod has a terminal phase (failed or succeeded)
+//  - pod has been marked for deletion and grace period has expired
+func PodUsageFunc(obj runtime.Object, clock clock.Clock) (api.ResourceList, error) {
+	pod, err := toInternalPodOrError(obj)
+	if err != nil {
+		return api.ResourceList{}, err
+	}
+	// by convention, we do not quota pods that have reached end-of life
+	if !QuotaPod(pod, clock) {
+		return api.ResourceList{}, nil
+	}
 	requests := api.ResourceList{}
 	limits := api.ResourceList{}
-
+	// TODO: ideally, we have pod level requests and limits in the future.
 	for i := range pod.Spec.Containers {
 		requests = quota.Add(requests, pod.Spec.Containers[i].Resources.Requests)
 		limits = quota.Add(limits, pod.Spec.Containers[i].Resources.Limits)
@@ -169,30 +266,11 @@ func PodUsageFunc(object runtime.Object) api.ResourceList {
 		limits = quota.Max(limits, pod.Spec.InitContainers[i].Resources.Limits)
 	}
 
-	return podUsageHelper(requests, limits)
-}
-
-// PodMatchesScopeFunc is a function that knows how to evaluate if a pod matches a scope
-func PodMatchesScopeFunc(scope api.ResourceQuotaScope, object runtime.Object) bool {
-	pod, ok := object.(*api.Pod)
-	if !ok {
-		return false
-	}
-	switch scope {
-	case api.ResourceQuotaScopeTerminating:
-		return isTerminating(pod)
-	case api.ResourceQuotaScopeNotTerminating:
-		return !isTerminating(pod)
-	case api.ResourceQuotaScopeBestEffort:
-		return isBestEffort(pod)
-	case api.ResourceQuotaScopeNotBestEffort:
-		return !isBestEffort(pod)
-	}
-	return false
+	return podUsageHelper(requests, limits), nil
 }
 
 func isBestEffort(pod *api.Pod) bool {
-	return qos.GetPodQOS(pod) == qos.BestEffort
+	return qos.GetPodQOS(pod) == api.PodQOSBestEffort
 }
 
 func isTerminating(pod *api.Pod) bool {
@@ -203,9 +281,47 @@ func isTerminating(pod *api.Pod) bool {
 }
 
 // QuotaPod returns true if the pod is eligible to track against a quota
+// A pod is eligible for quota, unless any of the following are true:
+//  - pod has a terminal phase (failed or succeeded)
+//  - pod has been marked for deletion and grace period has expired.
+func QuotaPod(pod *api.Pod, clock clock.Clock) bool {
+	// if pod is terminal, ignore it for quota
+	if api.PodFailed == pod.Status.Phase || api.PodSucceeded == pod.Status.Phase {
+		return false
+	}
+	// deleted pods that should be gone should not be charged to user quota.
+	// this can happen if a node is lost, and the kubelet is never able to confirm deletion.
+	// even though the cluster may have drifting clocks, quota makes a reasonable effort
+	// to balance cluster needs against user needs.  user's do not control clocks,
+	// but at worst a small drive in clocks will only slightly impact quota.
+	if pod.DeletionTimestamp != nil && pod.DeletionGracePeriodSeconds != nil {
+		now := clock.Now()
+		deletionTime := pod.DeletionTimestamp.Time
+		gracePeriod := time.Duration(*pod.DeletionGracePeriodSeconds) * time.Second
+		if now.After(deletionTime.Add(gracePeriod)) {
+			return false
+		}
+	}
+	return true
+}
+
+// QuotaV1Pod returns true if the pod is eligible to track against a quota
 // if it's not in a terminal state according to its phase.
-func QuotaPod(pod *api.Pod) bool {
-	// see GetPhase in kubelet.go for details on how it covers all restart policy conditions
-	// https://github.com/kubernetes/kubernetes/blob/master/pkg/kubelet/kubelet.go#L3001
-	return !(api.PodFailed == pod.Status.Phase || api.PodSucceeded == pod.Status.Phase)
+func QuotaV1Pod(pod *v1.Pod, clock clock.Clock) bool {
+	// if pod is terminal, ignore it for quota
+	if v1.PodFailed == pod.Status.Phase || v1.PodSucceeded == pod.Status.Phase {
+		return false
+	}
+	// if pods are stuck terminating (for example, a node is lost), we do not want
+	// to charge the user for that pod in quota because it could prevent them from
+	// scaling up new pods to service their application.
+	if pod.DeletionTimestamp != nil && pod.DeletionGracePeriodSeconds != nil {
+		now := clock.Now()
+		deletionTime := pod.DeletionTimestamp.Time
+		gracePeriod := time.Duration(*pod.DeletionGracePeriodSeconds) * time.Second
+		if now.After(deletionTime.Add(gracePeriod)) {
+			return false
+		}
+	}
+	return true
 }
