@@ -32,7 +32,11 @@ import (
 	"log"
 	"os"
 	//"io"
+
 )
+
+
+const PROJECT_NAMESPACE = "myproject"
 
 // return rest config, if path not specified assume in cluster config
 func GetClientConfig(kubeconfig string) (*rest.Config, error) {
@@ -74,7 +78,12 @@ func main() {
 		panic(err)
 	}
 
+//	DeleteSparkCluster(config, "spark-master-2182402101-mcj7s","spark-master-2182402101-mcj7s")
 	CreateCluster(config,nil)
+
+
+
+
 	// Create a CRD client interface
 	crdclient := client.CrdClient(crdcs, scheme, "default")
 
@@ -144,6 +153,32 @@ type ClusterConfig struct {
 	Ports []apiv1.ContainerPort
 }
 
+func DeleteSparkCluster( config *rest.Config, masterName string, workerName string  ){
+	clientset, err := kubernetes.NewForConfig(config)
+	if err != nil {
+		panic(err)
+	}
+
+	deploymentsClient := clientset.AppsV1beta1().Deployments("myproject")
+
+
+	deletePolicy := metav1.DeletePropagationForeground
+	if err := deploymentsClient.Delete(masterName, &metav1.DeleteOptions{
+		PropagationPolicy: &deletePolicy,
+	}); err != nil {
+		panic(err)
+	}
+
+	deletePolicyW := metav1.DeletePropagationForeground
+	if errw := deploymentsClient.Delete(workerName, &metav1.DeleteOptions{
+		PropagationPolicy: &deletePolicyW,
+	}); errw != nil {
+		panic(errw)
+	}
+
+
+	log.Println("Deleted nodes")
+}
 
 func CreateNewSparkWorkers( clientset *kubernetes.Clientset) {
 	deploymentsClient := clientset.AppsV1beta1().Deployments("myproject")
@@ -173,11 +208,15 @@ func CreateNewSparkWorkers( clientset *kubernetes.Clientset) {
 	deployment := CreatePod(clusterCfg)
 
 	log.Println("Running Deployment..")
+
+
+
 	result, err := deploymentsClient.Create(deployment)
 	if err != nil {
 		panic(err)
 	}
 	log.Printf("Created deployment %q.\n", result.GetObjectMeta().GetName())
+
 }
 
 // Generic Function for pod creations
@@ -259,6 +298,7 @@ func CreateNewSparkMaster( clientset *kubernetes.Clientset ) {
 	}
 	log.Printf("Created deployment %q.\n", result.GetObjectMeta().GetName())
 	CreateSparkClusterService(clusterCfg, clientset)
+
 }
 func CreateSparkClusterService(clusterCfg ClusterConfig, clientset *kubernetes.Clientset )   {
 
@@ -288,9 +328,11 @@ func CreateSparkClusterService(clusterCfg ClusterConfig, clientset *kubernetes.C
 			}},
 		},
 	}
-
+	//clientset.CoreV1().Services("myproject").Delete(clusterCfg.MasterSvcURI, )
 	svc_result, svc_err := clientset.CoreV1().Services("myproject").Create(service)
+
 	if svc_err != nil {
+
 		panic(svc_err)
 	}
 	log.Printf("Created Service %q.\n", svc_result.GetObjectMeta().GetName())
