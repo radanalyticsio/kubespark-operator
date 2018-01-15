@@ -1,17 +1,17 @@
 apiVersion: radanalytics.redhat.com/v1
 kind: SparkCluster
 metadata:
-  clusterName: "sparkle"
+  clusterName: "trevor"
   labels:
     radanalytics: sparkcluster
-  name: "sparkle"
+  name: "trevor"
   namespace: myproject
 spec:
   Image: radanalyticsio/openshift-spark:2.2-latest
-  SparkMasterName: sparkle-spark-master
-  SparkWorkerName: sparkle-spark-worker
+  SparkMasterName: trevor-spark-master
+  SparkWorkerName: trevor-spark-worker
   sparkmetrics: prometheus
-  workers: 3
+  workers: 5
 status:
   message: Created, not processed yet
   state: created
