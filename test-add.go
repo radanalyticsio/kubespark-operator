@@ -1,5 +1,6 @@
 package main
 
+
 import (
 	"fmt"
 	"time"
@@ -34,12 +35,12 @@ func main(){
 	if err != nil {
 		panic(err.Error())
 	}
-	createCRD(clientset)
-	sparkCluster := createSparkClusterObj("test-add2",
+	createCRD( clientset)
+	sparkCluster := createSparkClusterObj("spark-master","spark-worker","test-add",
 		"radanalyticsio/openshift-spark:2.2-latest",
-		3, true)
+		3, "prometheus")
 
-	deployCluster(config, sparkCluster, "default")
+	deployCluster(config, sparkCluster, "myproject")
 	fmt.Println("Done Deployment ")
 	//fmt.Println("Msg: Listing out objects")
 	//// List all Example objects
@@ -49,10 +50,9 @@ func main(){
 	//}
 	//fmt.Printf("List:\n%s\n", items)
 }
-
 func createCRD( clientset *apiextcs.Clientset) {
 	// note: if the CRD exist our CreateCRD function is set to exit without an error
- 	err := crd.CreateCRD(clientset)
+	err := crd.CreateCRD(clientset)
 	if err != nil {
 		fmt.Println("Msg: CRD Already Exists")
 		panic(err)
@@ -66,7 +66,7 @@ func deployCluster( config *rest.Config, sparkCluster *crd.SparkCluster, ns stri
 	if err != nil {
 		panic(err)
 	}
-	crdclient := client.CrdClient(crdcs, scheme, "default")
+	crdclient := client.CrdClient(crdcs, scheme, ns)
 	result, err := crdclient.Create(sparkCluster)
 	if err == nil {
 		fmt.Printf("CREATED: %#v\n", result)
@@ -77,14 +77,16 @@ func deployCluster( config *rest.Config, sparkCluster *crd.SparkCluster, ns stri
 	}
 }
 
-func createSparkClusterObj(clusterName string, imageName string, numWorkers int, metrics bool) *crd.SparkCluster {
+func createSparkClusterObj(sparkmastername string, sparkworkername string, clusterName string, imageName string, numWorkers int, metrics string) *crd.SparkCluster {
 	return &crd.SparkCluster{ObjectMeta: meta_v1.ObjectMeta{
 		Name:   clusterName,
 		Labels: map[string]string{"radanalytics": "sparkcluster"},
 	},
 		Spec: crd.SparkClusterSpec{
+			SparkMasterName: sparkmastername,
+			SparkWorkerName: sparkworkername,
 			Image:          imageName,
-			Workers:        numWorkers,
+			Workers:        int32(numWorkers),
 			SparkMetricsOn: metrics,
 		},
 		Status: crd.SparkClusterStatus{
@@ -93,3 +95,4 @@ func createSparkClusterObj(clusterName string, imageName string, numWorkers int,
 		},
 	}
 }
+

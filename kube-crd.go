@@ -78,14 +78,14 @@ func main() {
 		panic(err)
 	}
 
-//	DeleteSparkCluster(config, "spark-master-2182402101-mcj7s","spark-master-2182402101-mcj7s")
-	CreateCluster(config,nil)
+
+	//CreateCluster(config,nil)
 
 
 
 
 	// Create a CRD client interface
-	crdclient := client.CrdClient(crdcs, scheme, "default")
+	crdclient := client.CrdClient(crdcs, scheme, "myproject")
 
 
 	// Watch for changes in Spark objects and fire Add, Delete, Update callbacks
@@ -100,9 +100,9 @@ func main() {
 
 				//CreateCluster()
 
-				//CreateCluster(config, cls)
+				CreateCluster(config, cls)
 
-				//clusters.CreateCluster("sparkit", "default", "radanalyticsio/openshift-spark:2.2-latest",
+				//clusters.CreateClust1er("sparkit", "default", "radanalyticsio/openshift-spark:2.2-latest",
 				//	&config,  nil, config, "sparkit", false)
 
 				log.Println("Image is: ", cls.Spec.Image)
@@ -113,6 +113,9 @@ func main() {
 			},
 			DeleteFunc: func(obj interface{}) {
 				log.Printf("delete: %s \n", obj)
+				cluster:=obj.(*crd.SparkCluster)
+				DeleteSparkCluster(config, cluster.Spec.SparkMasterName, cluster.Spec.SparkWorkerName)
+				DeleteSparkClusterService(config, cluster.Spec.SparkMasterName)
 
 			},
 			UpdateFunc: func(oldObj, newObj interface{}) {
@@ -121,11 +124,30 @@ func main() {
 		},
 	)
 
+	log.Println("Starting controller")
 	stop := make(chan struct{})
 	go controller.Run(stop)
 
 	// Wait forever
 	select {}
+}
+func DeleteSparkClusterService(config *rest.Config, sparkmastername string) {
+	clientset, err := kubernetes.NewForConfig(config)
+	if err != nil {
+		panic(err)
+	}
+	deletePolicy := metav1.DeletePropagationForeground
+	 svc_err:=clientset.CoreV1().Services(PROJECT_NAMESPACE).Delete(sparkmastername+"-service", &metav1.DeleteOptions{
+	 	PropagationPolicy: &deletePolicy,
+	 })
+
+	if svc_err != nil {
+
+		panic(svc_err)
+	}
+	log.Printf("Deleted Service %q.\n", sparkmastername+"-service")
+
+
 }
 func CreateCluster(config *rest.Config, sparkConfig *crd.SparkCluster) {
 	clientset, err := kubernetes.NewForConfig(config)
@@ -135,8 +157,8 @@ func CreateCluster(config *rest.Config, sparkConfig *crd.SparkCluster) {
 	log.Println("~~~~~~~~~~~~~~~~~~~")
 	log.Println("Creating SparkCluster")
 	//Deploy Spark Master
-	CreateNewSparkMaster(clientset)
-	CreateNewSparkWorkers(clientset)
+	CreateNewSparkMaster(clientset, sparkConfig)
+	CreateNewSparkWorkers(clientset, sparkConfig)
 
 }
 
@@ -159,7 +181,7 @@ func DeleteSparkCluster( config *rest.Config, masterName string, workerName stri
 		panic(err)
 	}
 
-	deploymentsClient := clientset.AppsV1beta1().Deployments("myproject")
+	deploymentsClient := clientset.AppsV1beta1().Deployments(PROJECT_NAMESPACE)
 
 
 	deletePolicy := metav1.DeletePropagationForeground
@@ -180,21 +202,20 @@ func DeleteSparkCluster( config *rest.Config, masterName string, workerName stri
 	log.Println("Deleted nodes")
 }
 
-func CreateNewSparkWorkers( clientset *kubernetes.Clientset) {
-	deploymentsClient := clientset.AppsV1beta1().Deployments("myproject")
-
+func CreateNewSparkWorkers( clientset *kubernetes.Clientset, sparkConfig *crd.SparkCluster) {
+	deploymentsClient := clientset.AppsV1beta1().Deployments(PROJECT_NAMESPACE)
 	clusterCfg:=ClusterConfig{
-		"sparkle-master-service",
-		"radanalyticsio/openshift-spark",
-		"spark-worker",
-		"spark-worker",
-		3,
+		sparkConfig.Spec.SparkMasterName+"-service",
+		sparkConfig.Spec.Image,
+		sparkConfig.Spec.SparkWorkerName,
+		sparkConfig.Spec.SparkWorkerName,
+		sparkConfig.Spec.Workers,
 		map[string]string{
-			"app": "spark-worker",
+			"app": sparkConfig.Name+"-worker",
 		},[]apiv1.EnvVar{
 			apiv1.EnvVar{
 				Name:  "SPARK_MASTER_ADDRESS",
-				Value: "spark://sparkle-master-service:7077",
+				Value: "spark://"+sparkConfig.Spec.SparkMasterName+"-service"+":7077",
 			},
 			apiv1.EnvVar{
 				Name:  "SPARK_METRICS_ON",
@@ -202,21 +223,15 @@ func CreateNewSparkWorkers( clientset *kubernetes.Clientset) {
 			},
 			apiv1.EnvVar{
 				Name:  "SPARK_MASTER_UI_ADDRESS",
-				Value: "http://sparkle-master-service:8080",
+				Value: "http://"+sparkConfig.Spec.SparkMasterName+"-service"+":8080",
 	}},nil}
-
 	deployment := CreatePod(clusterCfg)
-
 	log.Println("Running Deployment..")
-
-
-
 	result, err := deploymentsClient.Create(deployment)
 	if err != nil {
 		panic(err)
 	}
 	log.Printf("Created deployment %q.\n", result.GetObjectMeta().GetName())
-
 }
 
 // Generic Function for pod creations
@@ -248,19 +263,19 @@ func CreatePod(config ClusterConfig) *appsv1beta1.Deployment {
 
 
 
-func CreateNewSparkMaster( clientset *kubernetes.Clientset ) {
+func CreateNewSparkMaster( clientset *kubernetes.Clientset ,sparkConfig *crd.SparkCluster) {
 	deploymentsClient := clientset.AppsV1beta1().Deployments("myproject")
 
 
 
 	clusterCfg:=ClusterConfig{
-		"sparkle-master-service",
+		sparkConfig.Spec.SparkMasterName+"-service",
 		"radanalyticsio/openshift-spark",
-		"spark-master",
-		"spark-master",
+		sparkConfig.Spec.SparkMasterName,
+		sparkConfig.Spec.SparkMasterName,
 		1,
 		map[string]string{
-			"app": "spark",
+			"app": sparkConfig.Spec.SparkMasterName,
 		},[]apiv1.EnvVar{
 			apiv1.EnvVar{
 				Name:  "SPARK_MASTER_PORT",
@@ -313,9 +328,7 @@ func CreateSparkClusterService(clusterCfg ClusterConfig, clientset *kubernetes.C
 		Spec: v1.ServiceSpec{
 			Type:      "ClusterIP",
 			ClusterIP: "None",
-			Selector: map[string]string{
-				"app": "spark",
-			},
+			Selector: clusterCfg.Labels,
 			Ports: []v1.ServicePort{{
 				Name: "sparksubmit",
 				Port: 7077,
@@ -329,7 +342,7 @@ func CreateSparkClusterService(clusterCfg ClusterConfig, clientset *kubernetes.C
 		},
 	}
 	//clientset.CoreV1().Services("myproject").Delete(clusterCfg.MasterSvcURI, )
-	svc_result, svc_err := clientset.CoreV1().Services("myproject").Create(service)
+	svc_result, svc_err := clientset.CoreV1().Services(PROJECT_NAMESPACE).Create(service)
 
 	if svc_err != nil {
 
