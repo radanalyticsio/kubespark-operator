@@ -1,0 +1,64 @@
+//package x
+
+//
+//import (
+//"flag"
+//
+//"os"
+//"log"
+//
+//"k8s.io/client-go/kubernetes"
+//"k8s.io/client-go/rest"
+//"k8s.io/client-go/tools/clientcmd"
+//	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+//)
+///*
+//
+//log.Println("Scaling  cluster")
+//clientset, err := kubernetes.NewForConfig(config)
+//if err != nil {
+//panic(err)
+//}
+//
+//deploymentsClient := clientset.AppsV1beta1().Deployments(PROJECT_NAMESPACE)
+//deploymentsClient.Get("")
+//
+// */
+//// return rest config, if path not specified assume in cluster config
+//func XXGetClientCfg(kubeconfig string) (*rest.Config, error) {
+//	if kubeconfig != "" {
+//		return clientcmd.BuildConfigFromFlags("", kubeconfig)
+//	}
+//	return rest.InClusterConfig()
+//}
+//
+//func main() {
+//	kubeconf := flag.String("kubeconf", os.Getenv("HOME")+"/.kube/config", "Path to a kube config. Only required if out-of-cluster.")
+//	flag.Parse()
+//	config, err := XXGetClientCfg(*kubeconf)
+//	if err != nil {
+//		panic(err.Error())
+//	}
+//	// creates the clientset
+//	clientset, err := kubernetes.NewForConfig(config)
+//	if err != nil {
+//		panic(err.Error())
+//	}
+//	sparkWorkers := "zak-spark-worker"
+//	ScaleSparkCluster(clientset, sparkWorkers, 3)
+//
+//}
+//
+//func ScaleSparkCluster(clientset *kubernetes.Clientset, sparkWorkers string, workers int32) {
+//	deploymentsClient := clientset.AppsV1beta1().Deployments("myproject")
+//
+//	deps, err := deploymentsClient.Get(sparkWorkers, v1.GetOptions{})
+//	//num:=deps.Spec.Replicas
+//	deps.Spec.Replicas = Xint32Ptr(workers)
+//	result, err := deploymentsClient.Update(deps)
+//	if err != nil {
+//		panic(err)
+//	}
+//	log.Printf("Scalled deployment %q.\n", result.GetObjectMeta().GetName())
+//}
+//func Xint32Ptr(i int32) *int32 { return &i }

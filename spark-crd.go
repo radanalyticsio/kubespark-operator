@@ -118,6 +118,12 @@ func main() {
 			},
 			UpdateFunc: func(oldObj, newObj interface{}) {
 				log.Printf("Update old: %s \n      New: %s\n", oldObj, newObj)
+				oldCluster := oldObj.(*crd.SparkCluster)
+				newCluster := newObj.(*crd.SparkCluster)
+				if oldCluster.Spec.Workers != newCluster.Spec.Workers {
+					ScaleSparkSpark(oldCluster,newCluster,config)
+					//(config, cluster.Spec
+				}
 			},
 		},
 	)
@@ -128,6 +134,31 @@ func main() {
 
 	// Wait forever
 	select {}
+}
+func ScaleSparkSpark(oldCluster *crd.SparkCluster, newCluster *crd.SparkCluster, config *rest.Config) {
+	log.Println("Scaling  cluster from: ", oldCluster.Spec.Workers)
+	log.Println("Scaling  cluster to: ", newCluster.Spec.Workers)
+	clientset, err := kubernetes.NewForConfig(config)
+	if err != nil {
+		panic(err)
+	}
+
+
+	deploymentsClient := clientset.AppsV1beta1().Deployments(PROJECT_NAMESPACE)
+
+	deps, err := deploymentsClient.Get(newCluster.Spec.SparkWorkerName, metav1.GetOptions{})
+	//num:=deps.Spec.Replicas
+	deps.Spec.Replicas = int32Ptr(newCluster.Spec.Workers)
+	result, err := deploymentsClient.Update(deps)
+	if err != nil {
+		panic(err)
+	}
+	log.Printf("Scaled deployment complete: %q.\n", result.GetObjectMeta().GetName())
+
+}
+
+func XScaleSparkCluster(clientset *kubernetes.Clientset, sparkWorkers string, workers int32) {
+
 }
 func DeletePrometheusService(config *rest.Config, sparkmastername string) {
 
