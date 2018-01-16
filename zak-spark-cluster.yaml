@@ -1,0 +1,17 @@
+apiVersion: radanalytics.redhat.com/v1
+kind: SparkCluster
+metadata:
+  clusterName: "zak"
+  labels:
+    radanalytics: sparkcluster
+  name: "zak"
+  namespace: myproject
+spec:
+  Image: radanalyticsio/openshift-spark:2.2-latest
+  SparkMasterName: zak-spark-master
+  SparkWorkerName: zak-spark-worker
+  sparkmetrics: prometheus
+  workers: 6
+status:
+  message: Created, not processed yet
+  state: created

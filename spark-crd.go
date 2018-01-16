@@ -32,6 +32,7 @@ import (
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/clientcmd"
+	"os"
 )
 
 const PROJECT_NAMESPACE = "myproject"
@@ -49,7 +50,7 @@ func main() {
 
 	rest.InClusterConfig()
 
-	kubeconf := flag.String("kubeconf", "/Users/zhassan/.kube/config", "Path to a kube config. Only required if out-of-cluster.")
+	kubeconf := flag.String("kubeconf", os.Getenv("HOME")+"/.kube/config", "Path to a kube config. Only required if out-of-cluster.")
 	flag.Parse()
 
 	config, err := GetClientConfig(*kubeconf)
@@ -172,7 +173,7 @@ func CreatePrometheus(config *rest.Config, sparkConfig *crd.SparkCluster) {
 				ContainerPort: 9090,
 			},
 		}}
-	CreateConfigurationMap(config, sparkConfig, sparkConfig.Spec.SparkMasterName, sparkConfig.Spec.SparkMasterName+SRV_SUFFIX+":7777")
+	CreateConfigurationMap(config, sparkConfig, clusterCfg.MasterSvcURI, sparkConfig.Spec.SparkMasterName+SRV_SUFFIX+":7777")
 
 	log.Println("Running Deployment..")
 	deployment := CreatePromPod(clusterCfg)
@@ -384,8 +385,11 @@ func CreatePromPod(config ClusterConfig) *appsv1beta1.Deployment {
 							Image: config.ImageName,
 							Env:   config.EnvVar,
 							VolumeMounts: []apiv1.VolumeMount{
-								{Name: "prometheus-store",
+								{	Name: "prometheus-store",
 									MountPath: "/prometheus/",
+								},
+								{	Name: config.MasterSvcURI,
+									MountPath:"/etc/prometheus",
 								},
 							},
 						},
@@ -399,7 +403,13 @@ func CreatePromPod(config ClusterConfig) *appsv1beta1.Deployment {
 									ReadOnly:  false,
 								},
 							},
-						},
+
+						}, { Name: config.MasterSvcURI,
+							 VolumeSource: apiv1.VolumeSource{
+								ConfigMap: &v1.ConfigMapVolumeSource{
+									LocalObjectReference: v1.LocalObjectReference{Name:config.MasterSvcURI},
+								},
+							},},
 					},
 				},
 			},

@@ -12,7 +12,7 @@ import (
 )
 
 // return rest config, if path not specified assume in cluster config
-func GetClientCfg(kubeconfig string) (*rest.Config, error) {
+func XGetClientCfg(kubeconfig string) (*rest.Config, error) {
 	if kubeconfig != "" {
 		return clientcmd.BuildConfigFromFlags("", kubeconfig)
 	}
@@ -35,13 +35,13 @@ func main() {
 	cfg := &v1api.ConfigMap{}
 	cfg.SetName("prom-config2")
 
-	fmt.Println("Config" + GetPromConfig("trevor", "trevor-spark-master-service"))
-	cfg.Data = map[string]string{"prometheus.yml": GetPromConfig("trevor", "trevor-spark-master-service")}
+	fmt.Println("Config" + XGetPromConfig("trevor", "trevor-spark-master-service"))
+	cfg.Data = map[string]string{"prometheus.yml": XGetPromConfig("trevor", "trevor-spark-master-service")}
 	clientset.CoreV1().ConfigMaps("myproject").Create(cfg)
 	fmt.Println("Created configmap")
 }
 
-func GetTopPromCfg() string {
+func XGetTopPromCfg() string {
 	return `
     global:
       scrape_interval:     5s
@@ -50,7 +50,7 @@ func GetTopPromCfg() string {
   `
 }
 
-func GetPromConfig(clusterName string, sparkmaster string) string {
+func XGetPromConfig(clusterName string, sparkmaster string) string {
 	promcfg := GetTopPromCfg()
 	promcfg += fmt.Sprintf(
 		`
