@@ -16,25 +16,23 @@ limitations under the License.
 package main
 
 import (
+	"flag"
+	"fmt"
+	"log"
 	"time"
+
 	"github.com/zmhassan/sparkcluster-crd/client"
 	"github.com/zmhassan/sparkcluster-crd/crd"
+	appsv1beta1 "k8s.io/api/apps/v1beta1"
+	"k8s.io/api/core/v1"
+	apiv1 "k8s.io/api/core/v1"
 	apiextcs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/clientcmd"
-	"k8s.io/client-go/kubernetes"
-	apiv1 "k8s.io/api/core/v1"
-	appsv1beta1 "k8s.io/api/apps/v1beta1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/api/core/v1"
-	"flag"
-	"log"
-
-	//"io"
-
 )
-
 
 const PROJECT_NAMESPACE = "myproject"
 const SRV_SUFFIX = "-service"
@@ -51,7 +49,7 @@ func main() {
 
 	rest.InClusterConfig()
 
-	kubeconf := flag.String("kubeconf", "", "Path to a kube config. Only required if out-of-cluster.")
+	kubeconf := flag.String("kubeconf", "/Users/zhassan/.kube/config", "Path to a kube config. Only required if out-of-cluster.")
 	flag.Parse()
 
 	config, err := GetClientConfig(*kubeconf)
@@ -81,15 +79,10 @@ func main() {
 		panic(err)
 	}
 
-
 	//CreateCluster(config,nil)
-
-
-
 
 	// Create a CRD client interface
 	crdclient := client.CrdClient(crdcs, scheme, PROJECT_NAMESPACE)
-
 
 	// Watch for changes in Spark objects and fire Add, Delete, Update callbacks
 	_, controller := cache.NewInformer(
@@ -99,7 +92,7 @@ func main() {
 		cache.ResourceEventHandlerFuncs{
 			AddFunc: func(obj interface{}) {
 				log.Printf("add: %s \n", obj)
-				cls:=obj.(*crd.SparkCluster)
+				cls := obj.(*crd.SparkCluster)
 
 				//CreateCluster()
 
@@ -108,14 +101,14 @@ func main() {
 				log.Println("Image is: ", cls.Spec.Image)
 				log.Println("Workers is: ", cls.Spec.Workers)
 				log.Println("SparkMetricsON is: ", cls.Spec.SparkMetrics)
-				if cls.Spec.SparkMetrics == "prometheus"{
+				if cls.Spec.SparkMetrics == "prometheus" {
 					CreatePrometheus(config, cls)
 				}
 
 			},
 			DeleteFunc: func(obj interface{}) {
 				log.Printf("delete: %s \n", obj)
-				cluster:=obj.(*crd.SparkCluster)
+				cluster := obj.(*crd.SparkCluster)
 				DeleteSparkCluster(config, cluster.Spec.SparkMasterName, cluster.Spec.SparkWorkerName)
 				DeleteSparkClusterService(config, cluster.Spec.SparkMasterName)
 				DeletePrometheusDeployment(config, cluster.Spec.SparkMasterName)
@@ -142,7 +135,7 @@ func DeletePrometheusService(config *rest.Config, sparkmastername string) {
 		panic(err)
 	}
 	deletePolicy := metav1.DeletePropagationForeground
-	svc_err:=clientset.CoreV1().Services(PROJECT_NAMESPACE).Delete("prometheus-"+ sparkmastername+ SRV_SUFFIX, &metav1.DeleteOptions{
+	svc_err := clientset.CoreV1().Services(PROJECT_NAMESPACE).Delete("prometheus-"+sparkmastername+SRV_SUFFIX, &metav1.DeleteOptions{
 		PropagationPolicy: &deletePolicy,
 	})
 
@@ -159,27 +152,28 @@ func CreatePrometheus(config *rest.Config, sparkConfig *crd.SparkCluster) {
 	}
 	deploymentsClient := clientset.AppsV1beta1().Deployments(PROJECT_NAMESPACE)
 
-
-	clusterCfg:=ClusterConfig{
-		sparkConfig.Spec.SparkMasterName+ SRV_SUFFIX,
+	clusterCfg := ClusterConfig{
+		sparkConfig.Spec.SparkMasterName + SRV_SUFFIX,
 		"prom/prometheus",
 		sparkConfig.Spec.SparkMasterName,
-		"prom-"+sparkConfig.Spec.SparkMasterName,
+		"prom-" + sparkConfig.Spec.SparkMasterName,
 		1,
 		map[string]string{
-			"app": "prometheus-"+sparkConfig.Spec.SparkMasterName,
-		},[]apiv1.EnvVar{
+			"app": "prometheus-" + sparkConfig.Spec.SparkMasterName,
+		}, []apiv1.EnvVar{
 			apiv1.EnvVar{
 				Name:  "SPARK_MASTER_PROM_URI",
-				Value: sparkConfig.Spec.SparkMasterName+ SRV_SUFFIX +":7777",
+				Value: sparkConfig.Spec.SparkMasterName + SRV_SUFFIX + ":7777",
 			},
-		},[]apiv1.ContainerPort{
+		}, []apiv1.ContainerPort{
 			{
 				Name:          "prometheus-web",
 				Protocol:      apiv1.ProtocolTCP,
 				ContainerPort: 9090,
 			},
 		}}
+	CreateConfigurationMap(config, sparkConfig, sparkConfig.Spec.SparkMasterName, sparkConfig.Spec.SparkMasterName+SRV_SUFFIX+":7777")
+
 	log.Println("Running Deployment..")
 	deployment := CreatePromPod(clusterCfg)
 	result, err := deploymentsClient.Create(deployment)
@@ -191,13 +185,50 @@ func CreatePrometheus(config *rest.Config, sparkConfig *crd.SparkCluster) {
 	// Logic similar to create SparkCluster.
 }
 
+func CreateConfigurationMap(config *rest.Config, sparkConfig *crd.SparkCluster, key string, value string) {
+
+	clientset, err := kubernetes.NewForConfig(config)
+	if err != nil {
+		panic(err)
+	}
+
+	cfg := &v1.ConfigMap{}
+	cfg.SetName(key)
+
+	fmt.Println("Config" + GetPromConfig(key, value))
+	cfg.Data = map[string]string{"prometheus.yml": GetPromConfig(key, value)}
+	clientset.CoreV1().ConfigMaps("myproject").Create(cfg)
+	fmt.Println("Created configmap")
+}
+
+func GetTopPromCfg() string {
+	return `
+    global:
+      scrape_interval:     5s
+      evaluation_interval: 5s
+    scrape_configs:
+  `
+}
+
+func GetPromConfig(clusterName string, sparkmaster string) string {
+
+	promcfg := GetTopPromCfg()
+	promcfg += fmt.Sprintf(
+		`
+      - job_name: '%s'
+        static_configs:
+          - targets: ['%s']
+`, clusterName, sparkmaster)
+	return promcfg
+}
+
 func DeleteSparkClusterService(config *rest.Config, sparkmastername string) {
 	clientset, err := kubernetes.NewForConfig(config)
 	if err != nil {
 		panic(err)
 	}
 	deletePolicy := metav1.DeletePropagationForeground
-	svc_err:=clientset.CoreV1().Services(PROJECT_NAMESPACE).Delete(sparkmastername+SRV_SUFFIX, &metav1.DeleteOptions{
+	svc_err := clientset.CoreV1().Services(PROJECT_NAMESPACE).Delete(sparkmastername+SRV_SUFFIX, &metav1.DeleteOptions{
 		PropagationPolicy: &deletePolicy,
 	})
 
@@ -205,8 +236,7 @@ func DeleteSparkClusterService(config *rest.Config, sparkmastername string) {
 
 		panic(svc_err)
 	}
-	log.Printf("Deleted Service %q.\n", sparkmastername+ SRV_SUFFIX)
-
+	log.Printf("Deleted Service %q.\n", sparkmastername+SRV_SUFFIX)
 
 }
 func CreateCluster(config *rest.Config, sparkConfig *crd.SparkCluster) {
@@ -225,19 +255,17 @@ func CreateCluster(config *rest.Config, sparkConfig *crd.SparkCluster) {
 // TODO: Pass in a clusterConfig which will contain properties
 
 type ClusterConfig struct {
-	MasterSvcURI string
-	ImageName string
-	PodName string
+	MasterSvcURI  string
+	ImageName     string
+	PodName       string
 	ContainerName string
-	ScaleNum int32
-	Labels map[string]string
-	EnvVar []apiv1.EnvVar
-	Ports []apiv1.ContainerPort
+	ScaleNum      int32
+	Labels        map[string]string
+	EnvVar        []apiv1.EnvVar
+	Ports         []apiv1.ContainerPort
 }
 
-
-
-func DeletePrometheusDeployment( config *rest.Config, masterName string){
+func DeletePrometheusDeployment(config *rest.Config, masterName string) {
 	clientset, err := kubernetes.NewForConfig(config)
 	if err != nil {
 		panic(err)
@@ -253,14 +281,13 @@ func DeletePrometheusDeployment( config *rest.Config, masterName string){
 	log.Println("Deleted nodes")
 }
 
-func DeleteSparkCluster( config *rest.Config, masterName string, workerName string  ){
+func DeleteSparkCluster(config *rest.Config, masterName string, workerName string) {
 	clientset, err := kubernetes.NewForConfig(config)
 	if err != nil {
 		panic(err)
 	}
 
 	deploymentsClient := clientset.AppsV1beta1().Deployments(PROJECT_NAMESPACE)
-
 
 	deletePolicy := metav1.DeletePropagationForeground
 	if err := deploymentsClient.Delete(masterName, &metav1.DeleteOptions{
@@ -276,24 +303,23 @@ func DeleteSparkCluster( config *rest.Config, masterName string, workerName stri
 		panic(errw)
 	}
 
-
 	log.Println("Deleted nodes")
 }
 
-func CreateNewSparkWorkers( clientset *kubernetes.Clientset, sparkConfig *crd.SparkCluster) {
+func CreateNewSparkWorkers(clientset *kubernetes.Clientset, sparkConfig *crd.SparkCluster) {
 	deploymentsClient := clientset.AppsV1beta1().Deployments(PROJECT_NAMESPACE)
-	clusterCfg:=ClusterConfig{
-		sparkConfig.Spec.SparkMasterName+SRV_SUFFIX,
+	clusterCfg := ClusterConfig{
+		sparkConfig.Spec.SparkMasterName + SRV_SUFFIX,
 		sparkConfig.Spec.Image,
 		sparkConfig.Spec.SparkWorkerName,
 		sparkConfig.Spec.SparkWorkerName,
 		sparkConfig.Spec.Workers,
 		map[string]string{
-			"app": sparkConfig.Name+"-worker",
-		},[]apiv1.EnvVar{
+			"app": sparkConfig.Name + "-worker",
+		}, []apiv1.EnvVar{
 			apiv1.EnvVar{
 				Name:  "SPARK_MASTER_ADDRESS",
-				Value: "spark://"+sparkConfig.Spec.SparkMasterName+SRV_SUFFIX+":7077",
+				Value: "spark://" + sparkConfig.Spec.SparkMasterName + SRV_SUFFIX + ":7077",
 			},
 			apiv1.EnvVar{
 				Name:  "SPARK_METRICS_ON",
@@ -301,8 +327,8 @@ func CreateNewSparkWorkers( clientset *kubernetes.Clientset, sparkConfig *crd.Sp
 			},
 			apiv1.EnvVar{
 				Name:  "SPARK_MASTER_UI_ADDRESS",
-				Value: "http://"+sparkConfig.Spec.SparkMasterName+SRV_SUFFIX+":8080",
-			}},nil}
+				Value: "http://" + sparkConfig.Spec.SparkMasterName + SRV_SUFFIX + ":8080",
+			}}, nil}
 	deployment := CreatePod(clusterCfg)
 	log.Println("Running Deployment..")
 	result, err := deploymentsClient.Create(deployment)
@@ -339,12 +365,11 @@ func CreatePod(config ClusterConfig) *appsv1beta1.Deployment {
 	return deployment
 }
 
-
 func CreatePromPod(config ClusterConfig) *appsv1beta1.Deployment {
 
 	deployment := &appsv1beta1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: "prometheus-"+config.PodName,
+			Name: "prometheus-" + config.PodName,
 		},
 		Spec: appsv1beta1.DeploymentSpec{
 			Replicas: int32Ptr(config.ScaleNum),
@@ -359,26 +384,23 @@ func CreatePromPod(config ClusterConfig) *appsv1beta1.Deployment {
 							Image: config.ImageName,
 							Env:   config.EnvVar,
 							VolumeMounts: []apiv1.VolumeMount{
-								{   Name: "prometheus-store",
+								{Name: "prometheus-store",
 									MountPath: "/prometheus/",
 								},
 							},
-
 						},
-
 					},
 					Volumes: []apiv1.Volume{
 						{
 							Name: "prometheus-store",
 							VolumeSource: apiv1.VolumeSource{
-								PersistentVolumeClaim:&apiv1.PersistentVolumeClaimVolumeSource{
-									ClaimName:"prom-storage",
-									ReadOnly:false,
+								PersistentVolumeClaim: &apiv1.PersistentVolumeClaimVolumeSource{
+									ClaimName: "prom-storage",
+									ReadOnly:  false,
 								},
 							},
 						},
 					},
-
 				},
 			},
 		},
@@ -386,18 +408,17 @@ func CreatePromPod(config ClusterConfig) *appsv1beta1.Deployment {
 	return deployment
 }
 
-
-func CreateNewSparkMaster( clientset *kubernetes.Clientset ,sparkConfig *crd.SparkCluster) {
+func CreateNewSparkMaster(clientset *kubernetes.Clientset, sparkConfig *crd.SparkCluster) {
 	deploymentsClient := clientset.AppsV1beta1().Deployments(PROJECT_NAMESPACE)
-	clusterCfg:=ClusterConfig{
-		sparkConfig.Spec.SparkMasterName+SRV_SUFFIX,
+	clusterCfg := ClusterConfig{
+		sparkConfig.Spec.SparkMasterName + SRV_SUFFIX,
 		"radanalyticsio/openshift-spark",
 		sparkConfig.Spec.SparkMasterName,
 		sparkConfig.Spec.SparkMasterName,
 		1,
 		map[string]string{
 			"app": sparkConfig.Spec.SparkMasterName,
-		},[]apiv1.EnvVar{
+		}, []apiv1.EnvVar{
 			apiv1.EnvVar{
 				Name:  "SPARK_MASTER_PORT",
 				Value: "7077",
@@ -409,7 +430,7 @@ func CreateNewSparkMaster( clientset *kubernetes.Clientset ,sparkConfig *crd.Spa
 			apiv1.EnvVar{
 				Name:  "SPARK_METRICS_ON",
 				Value: "prometheus",
-			}},[]apiv1.ContainerPort{
+			}}, []apiv1.ContainerPort{
 			{
 				Name:          "sparksubmit",
 				Protocol:      apiv1.ProtocolTCP,
@@ -436,8 +457,8 @@ func CreateNewSparkMaster( clientset *kubernetes.Clientset ,sparkConfig *crd.Spa
 	CreateSparkClusterService(clusterCfg, clientset)
 
 }
-func CreateSparkClusterService(clusterCfg ClusterConfig, clientset *kubernetes.Clientset )   {
-	service:= &v1.Service{
+func CreateSparkClusterService(clusterCfg ClusterConfig, clientset *kubernetes.Clientset) {
+	service := &v1.Service{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: clusterCfg.MasterSvcURI,
 			Labels: map[string]string{
@@ -448,7 +469,7 @@ func CreateSparkClusterService(clusterCfg ClusterConfig, clientset *kubernetes.C
 		Spec: v1.ServiceSpec{
 			Type:      "ClusterIP",
 			ClusterIP: "None",
-			Selector: clusterCfg.Labels,
+			Selector:  clusterCfg.Labels,
 			Ports: []v1.ServicePort{{
 				Name: "sparksubmit",
 				Port: 7077,
@@ -462,6 +483,7 @@ func CreateSparkClusterService(clusterCfg ClusterConfig, clientset *kubernetes.C
 		},
 	}
 	svc_result, svc_err := clientset.CoreV1().Services(PROJECT_NAMESPACE).Create(service)
+
 	if svc_err != nil {
 
 		panic(svc_err)
@@ -469,19 +491,19 @@ func CreateSparkClusterService(clusterCfg ClusterConfig, clientset *kubernetes.C
 	log.Printf("Created Service %q.\n", svc_result.GetObjectMeta().GetName())
 }
 
-func CreatePrometheusService(clusterCfg ClusterConfig, clientset *kubernetes.Clientset )   {
-	service:= &v1.Service{
+func CreatePrometheusService(clusterCfg ClusterConfig, clientset *kubernetes.Clientset) {
+	service := &v1.Service{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: "prometheus-"+clusterCfg.PodName+SRV_SUFFIX,
+			Name: "prometheus-" + clusterCfg.PodName + SRV_SUFFIX,
 			Labels: map[string]string{
-				"app": "prometheus-"+clusterCfg.MasterSvcURI+SRV_SUFFIX,
+				"app": "prometheus-" + clusterCfg.MasterSvcURI + SRV_SUFFIX,
 			},
 			OwnerReferences: []metav1.OwnerReference{},
 		},
 		Spec: v1.ServiceSpec{
 			Type:      "ClusterIP",
 			ClusterIP: "None",
-			Selector: clusterCfg.Labels,
+			Selector:  clusterCfg.Labels,
 			Ports: []v1.ServicePort{{
 				Name: "prometheus",
 				Port: 9090,
@@ -497,4 +519,3 @@ func CreatePrometheusService(clusterCfg ClusterConfig, clientset *kubernetes.Cli
 }
 
 func int32Ptr(i int32) *int32 { return &i }
-
