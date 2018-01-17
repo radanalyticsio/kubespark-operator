@@ -1,3 +1,4 @@
 export NS=myproject
 export SRV_ACC=oshinko
-oc create clusterrolebinding default-admin --clusterrole=cluster-admin --serviceaccount=$NS:$SVC_ACC
+oc create sa oshinko
+oc create clusterrolebinding root-cluster-admin-binding --clusterrole=cluster-admin --serviceaccount=$NS:$SRV_ACC

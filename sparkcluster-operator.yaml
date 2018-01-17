@@ -1,0 +1,39 @@
+kind: List
+apiVersion: v1
+metadata: {}
+items:
+
+
+  - apiVersion: v1
+    kind: Template
+    template: spark-operator
+    metadata:
+      name: spark-operator
+    objects:
+      - kind: DeploymentConfig
+        apiVersion: v1
+        metadata:
+          name: spark-operator
+        spec:
+          strategy:
+            type: Rolling
+          triggers:
+            - type: ConfigChange
+          replicas: 1
+          selector:
+            name: spark-operator
+          template:
+            metadata:
+              labels:
+                name: spark-operator
+            spec:
+              containers:
+                - name: spark-operator
+                  image: zmhassan/oshinko-crd:latest
+                  imagePullPolicy: Always
+                  env:
+                    - name: CURRENT_NAMESPACE
+                      valueFrom:
+                        fieldRef:
+                          fieldPath: metadata.namespace
+              serviceAccount: oshinko
