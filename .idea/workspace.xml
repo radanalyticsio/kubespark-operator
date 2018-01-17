@@ -2,15 +2,10 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="5f456487-dff1-4f27-9971-8bbe310b422d" name="Default" comment="">
+      <change beforePath="" afterPath="$PROJECT_DIR$/prom-storage.yaml" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change beforePath="$PROJECT_DIR$/ScaleWorkers.txt" afterPath="" />
       <change beforePath="$PROJECT_DIR$/_output/spark-crd" afterPath="$PROJECT_DIR$/_output/spark-crd" />
-      <change beforePath="$PROJECT_DIR$/get-spark-cluster.sh" afterPath="$PROJECT_DIR$/get-spark-cluster.sh" />
-      <change beforePath="$PROJECT_DIR$/my-spark-cluster.yaml" afterPath="$PROJECT_DIR$/spark-cluster.yaml" />
-      <change beforePath="$PROJECT_DIR$/prom-configmap.go" afterPath="" />
       <change beforePath="$PROJECT_DIR$/spark-crd.go" afterPath="$PROJECT_DIR$/spark-crd.go" />
-      <change beforePath="$PROJECT_DIR$/spark-operator-template.yaml" afterPath="$PROJECT_DIR$/sparkcluster-operator.yaml" />
-      <change beforePath="$PROJECT_DIR$/tools/permissions.sh" afterPath="$PROJECT_DIR$/tools/permissions.sh" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -24,8 +19,30 @@
       <file leaf-file-name="spark-crd.go" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/spark-crd.go">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="92">
-              <caret line="34" column="6" lean-forward="false" selection-start-line="34" selection-start-column="6" selection-end-line="34" selection-end-column="6" />
+            <state relative-caret-position="7973">
+              <caret line="559" column="69" lean-forward="false" selection-start-line="559" selection-start-column="69" selection-end-line="559" selection-end-column="69" />
+              <folding>
+                <element signature="e#581#1054#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="prom-storage.yaml" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/prom-storage.yaml">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="0">
+              <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="10" selection-end-column="18" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="SparkClusterCRD.go" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/crd/SparkClusterCRD.go">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="-1">
+              <caret line="62" column="16" lean-forward="false" selection-start-line="62" selection-start-column="16" selection-end-line="62" selection-end-column="16" />
               <folding />
             </state>
           </provider>
@@ -73,11 +90,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="permissions.sh" pinned="false" current-in-tab="true">
+      <file leaf-file-name="permissions.sh" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/tools/permissions.sh">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="72">
-              <caret line="4" column="0" lean-forward="true" selection-start-line="4" selection-start-column="0" selection-end-line="4" selection-end-column="0" />
+              <caret line="4" column="0" lean-forward="false" selection-start-line="4" selection-start-column="0" selection-end-line="4" selection-end-column="0" />
               <folding />
             </state>
           </provider>
@@ -88,26 +105,6 @@
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="72">
               <caret line="4" column="0" lean-forward="false" selection-start-line="4" selection-start-column="0" selection-end-line="4" selection-end-column="46" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="docker-build.sh" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/tools/docker-build.sh">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="54">
-              <caret line="3" column="32" lean-forward="false" selection-start-line="3" selection-start-column="32" selection-end-line="3" selection-end-column="32" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="Dockerfile" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/Dockerfile">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="36">
-              <caret line="2" column="8" lean-forward="false" selection-start-line="2" selection-start-column="8" selection-end-line="2" selection-end-column="8" />
               <folding />
             </state>
           </provider>
@@ -191,8 +188,9 @@
         <option value="$PROJECT_DIR$/ScaleWorkers.go" />
         <option value="$PROJECT_DIR$/get-spark-cluster.sh" />
         <option value="$PROJECT_DIR$/sparkcluster-operator.yaml" />
-        <option value="$PROJECT_DIR$/spark-crd.go" />
         <option value="$PROJECT_DIR$/tools/permissions.sh" />
+        <option value="$PROJECT_DIR$/spark-crd.go" />
+        <option value="$PROJECT_DIR$/prom-storage.yaml" />
       </list>
     </option>
   </component>
@@ -229,6 +227,11 @@
             <path>
               <item name="sparkcluster-crd" type="b2602c69:ProjectViewProjectNode" />
               <item name="sparkcluster-crd" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="sparkcluster-crd" type="b2602c69:ProjectViewProjectNode" />
+              <item name="sparkcluster-crd" type="462c0819:PsiDirectoryNode" />
+              <item name="crd" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="sparkcluster-crd" type="b2602c69:ProjectViewProjectNode" />
@@ -426,13 +429,6 @@
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/vendor/k8s.io/client-go/tools/clientcmd/client_config.go">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="486">
-          <caret line="30" column="4" lean-forward="false" selection-start-line="30" selection-start-column="4" selection-end-line="30" selection-end-column="38" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/vendor/k8s.io/client-go/kubernetes/typed/apps/v1beta1/deployment.go">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="172">
@@ -547,7 +543,9 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="-186">
           <caret line="79" column="29" lean-forward="false" selection-start-line="79" selection-start-column="29" selection-end-line="79" selection-end-column="29" />
-          <folding />
+          <folding>
+            <element signature="e#581#1054#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -613,13 +611,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="350">
           <caret line="319" column="95" lean-forward="false" selection-start-line="319" selection-start-column="95" selection-end-line="319" selection-end-column="95" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/crd/SparkClusterCRD.go">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="464">
-          <caret line="62" column="16" lean-forward="false" selection-start-line="62" selection-start-column="16" selection-end-line="62" selection-end-column="16" />
         </state>
       </provider>
     </entry>
@@ -758,18 +749,36 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/spark-crd.go">
+    <entry file="file://$PROJECT_DIR$/tools/permissions.sh">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="92">
-          <caret line="34" column="6" lean-forward="false" selection-start-line="34" selection-start-column="6" selection-end-line="34" selection-end-column="6" />
+        <state relative-caret-position="72">
+          <caret line="4" column="0" lean-forward="false" selection-start-line="4" selection-start-column="0" selection-end-line="4" selection-end-column="0" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/tools/permissions.sh">
+    <entry file="file://$PROJECT_DIR$/crd/SparkClusterCRD.go">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="72">
-          <caret line="4" column="0" lean-forward="true" selection-start-line="4" selection-start-column="0" selection-end-line="4" selection-end-column="0" />
+        <state relative-caret-position="-1">
+          <caret line="62" column="16" lean-forward="false" selection-start-line="62" selection-start-column="16" selection-end-line="62" selection-end-column="16" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/spark-crd.go">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="7973">
+          <caret line="559" column="69" lean-forward="false" selection-start-line="559" selection-start-column="69" selection-end-line="559" selection-end-column="69" />
+          <folding>
+            <element signature="e#581#1054#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/prom-storage.yaml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="10" selection-end-column="18" />
           <folding />
         </state>
       </provider>

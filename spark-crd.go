@@ -32,10 +32,11 @@ import (
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/clientcmd"
-	//"os"
+
+	"os"
 )
 
-const PROJECT_NAMESPACE = "myproject"
+
 const SRV_SUFFIX = "-service"
 
 // return rest config, if path not specified assume in cluster config
@@ -46,6 +47,10 @@ func GetClientConfig(kubeconfig string) (*rest.Config, error) {
 	return rest.InClusterConfig()
 }
 
+func GetNameSpace() string{
+	NAMESPACE:=os.Getenv("CURRENT_NAMESPACE")
+	return NAMESPACE
+}
 func main() {
 
 	rest.InClusterConfig()
@@ -84,7 +89,7 @@ func main() {
 	//CreateCluster(config,nil)
 
 	// Create a CRD client interface
-	crdclient := client.CrdClient(crdcs, scheme, PROJECT_NAMESPACE)
+	crdclient := client.CrdClient(crdcs, scheme, GetNameSpace())
 
 	// Watch for changes in Spark objects and fire Add, Delete, Update callbacks
 	_, controller := cache.NewInformer(
@@ -145,7 +150,7 @@ func ScaleSparkSpark(oldCluster *crd.SparkCluster, newCluster *crd.SparkCluster,
 	}
 
 
-	deploymentsClient := clientset.AppsV1beta1().Deployments(PROJECT_NAMESPACE)
+	deploymentsClient := clientset.AppsV1beta1().Deployments(GetNameSpace())
 
 	deps, err := deploymentsClient.Get(newCluster.Spec.SparkWorkerName, metav1.GetOptions{})
 	//num:=deps.Spec.Replicas
@@ -168,7 +173,7 @@ func DeletePrometheusService(config *rest.Config, sparkmastername string) {
 		panic(err)
 	}
 	deletePolicy := metav1.DeletePropagationForeground
-	svc_err := clientset.CoreV1().Services(PROJECT_NAMESPACE).Delete("prometheus-"+sparkmastername+SRV_SUFFIX, &metav1.DeleteOptions{
+	svc_err := clientset.CoreV1().Services(GetNameSpace()).Delete("prometheus-"+sparkmastername+SRV_SUFFIX, &metav1.DeleteOptions{
 		PropagationPolicy: &deletePolicy,
 	})
 
@@ -183,7 +188,7 @@ func CreatePrometheus(config *rest.Config, sparkConfig *crd.SparkCluster) {
 	if err != nil {
 		panic(err)
 	}
-	deploymentsClient := clientset.AppsV1beta1().Deployments(PROJECT_NAMESPACE)
+	deploymentsClient := clientset.AppsV1beta1().Deployments(GetNameSpace())
 
 	clusterCfg := ClusterConfig{
 		sparkConfig.Spec.SparkMasterName + SRV_SUFFIX,
@@ -230,7 +235,7 @@ func CreateConfigurationMap(config *rest.Config, sparkConfig *crd.SparkCluster, 
 
 	fmt.Println("Config" + GetPromConfig(key, value))
 	cfg.Data = map[string]string{"prometheus.yml": GetPromConfig(key, value)}
-	clientset.CoreV1().ConfigMaps("myproject").Create(cfg)
+	clientset.CoreV1().ConfigMaps(GetNameSpace()).Create(cfg)
 	fmt.Println("Created configmap")
 }
 
@@ -261,7 +266,7 @@ func DeleteSparkClusterService(config *rest.Config, sparkmastername string) {
 		panic(err)
 	}
 	deletePolicy := metav1.DeletePropagationForeground
-	svc_err := clientset.CoreV1().Services(PROJECT_NAMESPACE).Delete(sparkmastername+SRV_SUFFIX, &metav1.DeleteOptions{
+	svc_err := clientset.CoreV1().Services(GetNameSpace()).Delete(sparkmastername+SRV_SUFFIX, &metav1.DeleteOptions{
 		PropagationPolicy: &deletePolicy,
 	})
 
@@ -303,7 +308,7 @@ func DeletePrometheusDeployment(config *rest.Config, masterName string) {
 	if err != nil {
 		panic(err)
 	}
-	deploymentsClient := clientset.AppsV1beta1().Deployments(PROJECT_NAMESPACE)
+	deploymentsClient := clientset.AppsV1beta1().Deployments(GetNameSpace())
 	deletePolicy := metav1.DeletePropagationForeground
 	if err := deploymentsClient.Delete("prometheus-"+masterName, &metav1.DeleteOptions{
 		PropagationPolicy: &deletePolicy,
@@ -320,7 +325,7 @@ func DeleteSparkCluster(config *rest.Config, masterName string, workerName strin
 		panic(err)
 	}
 
-	deploymentsClient := clientset.AppsV1beta1().Deployments(PROJECT_NAMESPACE)
+	deploymentsClient := clientset.AppsV1beta1().Deployments(GetNameSpace())
 
 	deletePolicy := metav1.DeletePropagationForeground
 	if err := deploymentsClient.Delete(masterName, &metav1.DeleteOptions{
@@ -340,7 +345,7 @@ func DeleteSparkCluster(config *rest.Config, masterName string, workerName strin
 }
 
 func CreateNewSparkWorkers(clientset *kubernetes.Clientset, sparkConfig *crd.SparkCluster) {
-	deploymentsClient := clientset.AppsV1beta1().Deployments(PROJECT_NAMESPACE)
+	deploymentsClient := clientset.AppsV1beta1().Deployments(GetNameSpace())
 	clusterCfg := ClusterConfig{
 		sparkConfig.Spec.SparkMasterName + SRV_SUFFIX,
 		sparkConfig.Spec.Image,
@@ -451,7 +456,7 @@ func CreatePromPod(config ClusterConfig) *appsv1beta1.Deployment {
 }
 
 func CreateNewSparkMaster(clientset *kubernetes.Clientset, sparkConfig *crd.SparkCluster) {
-	deploymentsClient := clientset.AppsV1beta1().Deployments(PROJECT_NAMESPACE)
+	deploymentsClient := clientset.AppsV1beta1().Deployments(GetNameSpace())
 	clusterCfg := ClusterConfig{
 		sparkConfig.Spec.SparkMasterName + SRV_SUFFIX,
 		"radanalyticsio/openshift-spark",
@@ -524,7 +529,7 @@ func CreateSparkClusterService(clusterCfg ClusterConfig, clientset *kubernetes.C
 			}},
 		},
 	}
-	svc_result, svc_err := clientset.CoreV1().Services(PROJECT_NAMESPACE).Create(service)
+	svc_result, svc_err := clientset.CoreV1().Services(GetNameSpace()).Create(service)
 
 	if svc_err != nil {
 
@@ -552,7 +557,7 @@ func CreatePrometheusService(clusterCfg ClusterConfig, clientset *kubernetes.Cli
 			}},
 		},
 	}
-	svc_result, svc_err := clientset.CoreV1().Services(PROJECT_NAMESPACE).Create(service)
+	svc_result, svc_err := clientset.CoreV1().Services(GetNameSpace()).Create(service)
 	if svc_err != nil {
 
 		panic(svc_err)
