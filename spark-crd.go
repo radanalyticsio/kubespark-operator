@@ -435,10 +435,8 @@ func CreatePromPod(config ClusterConfig) *appsv1beta1.Deployment {
 						{
 							Name: "prometheus-store",
 							VolumeSource: apiv1.VolumeSource{
-								PersistentVolumeClaim: &apiv1.PersistentVolumeClaimVolumeSource{
-									ClaimName: "prom-storage",
-									ReadOnly:  false,
-								},
+								//PersistentVolumeClaim: &apiv1.PersistentVolumeClaimVolumeSource{ ClaimName: "prom-storage", ReadOnly:  false,},
+							EmptyDir: &apiv1.EmptyDirVolumeSource{},
 							},
 
 						}, { Name: config.MasterSvcURI,
