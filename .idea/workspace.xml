@@ -2,16 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="5f456487-dff1-4f27-9971-8bbe310b422d" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change beforePath="$PROJECT_DIR$/crd/CRDLauncher.go" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/oshinko/oshinkocli/Create.go" afterPath="$PROJECT_DIR$/oshinko/oshinkocli/Create.go" />
-      <change beforePath="$PROJECT_DIR$/oshinko/oshinkocli/Delete.go" afterPath="$PROJECT_DIR$/oshinko/oshinkocli/Delete.go" />
       <change beforePath="$PROJECT_DIR$/oshinko/oshinkocli/Scale.go" afterPath="$PROJECT_DIR$/oshinko/oshinkocli/Scale.go" />
-      <change beforePath="$PROJECT_DIR$/podDiscovery.go" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/prom-storage.yaml" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/spark-metrics-template.yaml" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/spark-operator.go" afterPath="$PROJECT_DIR$/spark-operator.go" />
-      <change beforePath="$PROJECT_DIR$/test-add.go" afterPath="$PROJECT_DIR$/test-add.go" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -26,7 +17,7 @@
         <entry file="file://$PROJECT_DIR$/controller/Controller.go">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="238">
-              <caret line="28" column="31" lean-forward="true" selection-start-line="28" selection-start-column="31" selection-end-line="28" selection-end-column="31" />
+              <caret line="28" column="31" lean-forward="false" selection-start-line="28" selection-start-column="31" selection-end-line="28" selection-end-column="31" />
               <folding>
                 <element signature="e#20#381#0" expanded="true" />
               </folding>
@@ -38,7 +29,7 @@
         <entry file="file://$PROJECT_DIR$/oshinko/oshinkocli/Create.go">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="200">
-              <caret line="69" column="142" lean-forward="true" selection-start-line="69" selection-start-column="96" selection-end-line="69" selection-end-column="142" />
+              <caret line="69" column="142" lean-forward="false" selection-start-line="69" selection-start-column="96" selection-end-line="69" selection-end-column="142" />
               <folding>
                 <element signature="e#20#344#0" expanded="true" />
               </folding>
@@ -50,7 +41,7 @@
         <entry file="file://$PROJECT_DIR$/podDiscovery.go">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="255">
-              <caret line="35" column="59" lean-forward="true" selection-start-line="35" selection-start-column="59" selection-end-line="35" selection-end-column="113" />
+              <caret line="35" column="59" lean-forward="false" selection-start-line="35" selection-start-column="59" selection-end-line="35" selection-end-column="113" />
               <folding />
             </state>
           </provider>
@@ -99,8 +90,8 @@
       <file leaf-file-name="Scale.go" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/oshinko/oshinkocli/Scale.go">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="891">
-              <caret line="57" column="32" lean-forward="true" selection-start-line="57" selection-start-column="32" selection-end-line="57" selection-end-column="32" />
+            <state relative-caret-position="391">
+              <caret line="23" column="1" lean-forward="false" selection-start-line="23" selection-start-column="1" selection-end-line="23" selection-end-column="1" />
               <folding>
                 <element signature="e#20#255#0" expanded="true" />
               </folding>
@@ -112,7 +103,7 @@
         <entry file="file://$PROJECT_DIR$/oshinko/oshinkocli/Delete.go">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="319">
-              <caret line="29" column="95" lean-forward="true" selection-start-line="29" selection-start-column="95" selection-end-line="29" selection-end-column="142" />
+              <caret line="29" column="95" lean-forward="false" selection-start-line="29" selection-start-column="95" selection-end-line="29" selection-end-column="142" />
               <folding>
                 <element signature="e#20#246#0" expanded="true" />
               </folding>
@@ -419,6 +410,7 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="0" width="1920" height="1080" extended-state="6" />
+    <editor active="true" />
     <layout>
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.123958334" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
@@ -426,7 +418,7 @@
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3291262" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.33009708" sideWeight="0.49761903" order="5" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.33009708" sideWeight="0.49761903" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.53539824" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="true" content_ui="tabs" />
@@ -709,7 +701,7 @@
         <state relative-caret-position="159">
           <caret line="12" column="0" lean-forward="false" selection-start-line="12" selection-start-column="0" selection-end-line="12" selection-end-column="0" />
           <folding>
-            <element signature="e#14#164#0" expanded="true" />
+            <element signature="e#14#164#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -767,7 +759,7 @@
         <state relative-caret-position="214">
           <caret line="45" column="5" lean-forward="false" selection-start-line="45" selection-start-column="5" selection-end-line="45" selection-end-column="5" />
           <folding>
-            <element signature="e#13#431#0" expanded="true" />
+            <element signature="e#13#431#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -783,7 +775,7 @@
     <entry file="file://$PROJECT_DIR$/controller/Controller.go">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="238">
-          <caret line="28" column="31" lean-forward="true" selection-start-line="28" selection-start-column="31" selection-end-line="28" selection-end-column="31" />
+          <caret line="28" column="31" lean-forward="false" selection-start-line="28" selection-start-column="31" selection-end-line="28" selection-end-column="31" />
           <folding>
             <element signature="e#20#381#0" expanded="true" />
           </folding>
@@ -801,7 +793,7 @@
     <entry file="file://$PROJECT_DIR$/podDiscovery.go">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="255">
-          <caret line="35" column="59" lean-forward="true" selection-start-line="35" selection-start-column="59" selection-end-line="35" selection-end-column="113" />
+          <caret line="35" column="59" lean-forward="false" selection-start-line="35" selection-start-column="59" selection-end-line="35" selection-end-column="113" />
           <folding />
         </state>
       </provider>
@@ -817,7 +809,7 @@
     <entry file="file://$PROJECT_DIR$/oshinko/oshinkocli/Create.go">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="200">
-          <caret line="69" column="142" lean-forward="true" selection-start-line="69" selection-start-column="96" selection-end-line="69" selection-end-column="142" />
+          <caret line="69" column="142" lean-forward="false" selection-start-line="69" selection-start-column="96" selection-end-line="69" selection-end-column="142" />
           <folding>
             <element signature="e#20#344#0" expanded="true" />
           </folding>
@@ -827,7 +819,7 @@
     <entry file="file://$PROJECT_DIR$/oshinko/oshinkocli/Delete.go">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="319">
-          <caret line="29" column="95" lean-forward="true" selection-start-line="29" selection-start-column="95" selection-end-line="29" selection-end-column="142" />
+          <caret line="29" column="95" lean-forward="false" selection-start-line="29" selection-start-column="95" selection-end-line="29" selection-end-column="142" />
           <folding>
             <element signature="e#20#246#0" expanded="true" />
           </folding>
@@ -836,8 +828,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/oshinko/oshinkocli/Scale.go">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="891">
-          <caret line="57" column="32" lean-forward="true" selection-start-line="57" selection-start-column="32" selection-end-line="57" selection-end-column="32" />
+        <state relative-caret-position="391">
+          <caret line="23" column="1" lean-forward="false" selection-start-line="23" selection-start-column="1" selection-end-line="23" selection-end-column="1" />
           <folding>
             <element signature="e#20#255#0" expanded="true" />
           </folding>

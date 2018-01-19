@@ -21,8 +21,7 @@ func ScaleSparkSpark(oldCluster *crd.SparkCluster, newCluster *crd.SparkCluster,
 	}
 	deploymentsClient := clientset.AppsV1beta1().Deployments(oshinkoconfig.GetNameSpace())
 	deps, err := deploymentsClient.Get(newCluster.Spec.SparkWorkerName, metav1.GetOptions{})
-	//num:=deps.Spec.Replicas
-	deps.Spec.Replicas = Int32Ptr(newCluster.Spec.Workers)
+ 	deps.Spec.Replicas = Int32Ptr(newCluster.Spec.Workers)
 	result, err := deploymentsClient.Update(deps)
 	if err != nil {
 		panic(err)
