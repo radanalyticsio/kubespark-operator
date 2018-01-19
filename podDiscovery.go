@@ -33,7 +33,7 @@ func main() {
 	}
 
 	//TODO Discover pods with a particular label: sparkcluster=trevor
-	list, err := clientset.CoreV1().Pods("myproject").List(meta_v1.ListOptions{}) //LabelSelector:"sparkcluster=trevor"})
+	list, err := clientset.CoreV1().Pods("myproject").List(meta_v1.ListOptions{ LabelSelector:"clustername=zak" }) //LabelSelector:"sparkcluster=trevor"})
 	if err != nil {
 		panic(err)
 	}

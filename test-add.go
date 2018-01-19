@@ -87,7 +87,7 @@ func createSparkClusterObj(sparkmastername string, sparkworkername string, clust
 			SparkWorkerName: sparkworkername,
 			Image:          imageName,
 			Workers:        int32(numWorkers),
-			SparkMetricsOn: metrics,
+			SparkMetrics: metrics,
 		},
 		Status: crd.SparkClusterStatus{
 			State:   "created",

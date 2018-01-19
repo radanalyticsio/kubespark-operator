@@ -18,16 +18,16 @@ func DeleteAll(config *rest.Config, cluster *crd.SparkCluster) {
 	DeleteSparkClusterService(config, cluster.Spec.SparkMasterName)
 	DeletePrometheusDeployment(config, cluster.Spec.SparkMasterName)
 	DeletePrometheusService(config, cluster.Spec.SparkMasterName)
-	DeleteConfigMap(config, cluster.Spec.SparkMasterName)
+	DeleteConfigMap(config, cluster)
 }
 
-func DeleteConfigMap(config *rest.Config, sparkMaster string) {
+func DeleteConfigMap(config *rest.Config, sparkCluster *crd.SparkCluster) {
 	clientset, err := kubernetes.NewForConfig(config)
 	if err != nil {
 		panic(err)
 	}
 	//TODO Discover pods with a particular label: sparkcluster=trevor
-	list, err := clientset.CoreV1().Pods(oshinkoconfig.GetNameSpace()).List(metav1.ListOptions{}) //LabelSelector:"sparkcluster=trevor"})
+	list, err := clientset.CoreV1().Pods(oshinkoconfig.GetNameSpace()).List(metav1.ListOptions{LabelSelector:"clustername="+sparkCluster.Name }) //LabelSelector:"sparkcluster=trevor"})
 	if err != nil {
 		panic(err)
 	}
@@ -37,7 +37,7 @@ func DeleteConfigMap(config *rest.Config, sparkMaster string) {
 		promCfg+=AddSparkNodeToMonitor(d.Name, d.Status.PodIP+":7777")
 	}
 	deletePolicy := metav1.DeletePropagationForeground
-	cerr:=clientset.CoreV1().ConfigMaps(oshinkoconfig.GetNameSpace()).Delete(sparkMaster+SRV_SUFFIX, &metav1.DeleteOptions{
+	cerr:=clientset.CoreV1().ConfigMaps(oshinkoconfig.GetNameSpace()).Delete(sparkCluster.Spec.SparkMasterName+SRV_SUFFIX, &metav1.DeleteOptions{
 		PropagationPolicy: &deletePolicy,
 	})
 	if cerr != nil {

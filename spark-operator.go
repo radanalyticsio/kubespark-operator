@@ -10,7 +10,7 @@ import (
 )
 
 
- 
+
 // Main entry point of application. It will create a CRD and create the controller/operator that will manage the crd in kubernetes.
 func main() {
 	kubeconf := flag.String("kubeconf", os.Getenv("HOME")+"/.kube/config", "Path to a kube config. Only required if out-of-cluster.")

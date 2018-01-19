@@ -28,30 +28,20 @@ func ScaleSparkSpark(oldCluster *crd.SparkCluster, newCluster *crd.SparkCluster,
 		panic(err)
 	}
 	fmt.Println("Waiting for 1 minute while it is running the scaledown/up process")
-	time.Sleep(1 * time.Minute)
+	time.Sleep(30 * time.Second)
 	UpdateConfigurationMap(config, newCluster, newCluster.Spec.SparkMasterName + SRV_SUFFIX, newCluster.Spec.SparkMasterName+SRV_SUFFIX+":7777")
-	UpdatePrometheusDeployment(config, newCluster.Spec.SparkMasterName)
+	UpdatePrometheusDeployment(config, newCluster.Spec.SparkMasterName, newCluster)
 	log.Printf("Scaled deployment complete: %q.\n", result.GetObjectMeta().GetName())
 }
 // TODO: Figure out a way to roll out new prometheus when users scale up or down.
-func UpdatePrometheusDeployment(config *rest.Config, masterName string) {
-	clientset, err := kubernetes.NewForConfig(config)
-	if err != nil {
-		panic(err)
-	}
-	fmt.Println("Scaling prometheus to 1")
-	deployments,derr := clientset.AppsV1beta1().Deployments(oshinkoconfig.GetNameSpace()).Get("prometheus-"+masterName, metav1.GetOptions{})
-	deployments.Spec.Replicas=Int32Ptr(0)
-	if derr != nil {
-		panic(err)
-	}
-	clientset.AppsV1beta1().Deployments(oshinkoconfig.GetNameSpace()).Update(deployments)
+func UpdatePrometheusDeployment(config *rest.Config, masterName string, sparkConfig *crd.SparkCluster) {
+ 	fmt.Println("Undeploying prometheus")
+	DeletePrometheusDeployment(config,masterName)
 	fmt.Println("Waiting 30 seconds")
-	time.Sleep(30* time.Second)
-	fmt.Println("Scaling prometheus to 1")
-	deployments.Spec.Replicas=Int32Ptr(1)
-	clientset.AppsV1beta1().Deployments(oshinkoconfig.GetNameSpace()).Update(deployments)
-	log.Println("Updated prometheus")
+	time.Sleep(10* time.Second)
+	fmt.Println("Deploying prometheus")
+	CreatePrometheus(config,sparkConfig,false)
+	log.Println("Done prometheus")
 }
 
 
@@ -61,7 +51,7 @@ func UpdateConfigurationMap(config *rest.Config, sparkConfig *crd.SparkCluster, 
 		panic(err)
 	}
 	//TODO Discover pods with a particular label: sparkcluster=trevor
-	list, err := clientset.CoreV1().Pods(oshinkoconfig.GetNameSpace()).List(metav1.ListOptions{}) //LabelSelector:"sparkcluster=trevor"})
+	list, err := clientset.CoreV1().Pods(oshinkoconfig.GetNameSpace()).List(metav1.ListOptions{LabelSelector:"clustername=" + sparkConfig.Name })
 	if err != nil {
 		panic(err)
 	}

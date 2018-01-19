@@ -16,7 +16,7 @@ import (
 
 
 
-func CreatePrometheus(config *rest.Config, sparkConfig *crd.SparkCluster) {
+func CreatePrometheus(config *rest.Config, sparkConfig *crd.SparkCluster, createService bool) {
 	clientset, err := kubernetes.NewForConfig(config)
 	if err != nil {
 		panic(err)
@@ -24,6 +24,7 @@ func CreatePrometheus(config *rest.Config, sparkConfig *crd.SparkCluster) {
 	deploymentsClient := clientset.AppsV1beta1().Deployments(oshinkoconfig.GetNameSpace())
 
 	clusterCfg := ClusterConfig{
+		sparkConfig.Name,
 		sparkConfig.Spec.SparkMasterName + SRV_SUFFIX,
 		"prom/prometheus",
 		sparkConfig.Spec.SparkMasterName,
@@ -31,6 +32,7 @@ func CreatePrometheus(config *rest.Config, sparkConfig *crd.SparkCluster) {
 		1,
 		map[string]string{
 			"app": "prometheus-" + sparkConfig.Spec.SparkMasterName,
+
 		}, []apiv1.EnvVar{
 			{
 				Name:  "SPARK_MASTER_PROM_URI",
@@ -51,7 +53,9 @@ func CreatePrometheus(config *rest.Config, sparkConfig *crd.SparkCluster) {
 		panic(err)
 	}
 	log.Printf("Created prometheus deployment %q.\n", result.GetObjectMeta().GetName())
+	if createService == true {
 	CreatePrometheusService(clusterCfg, clientset)
+	}
 	// Logic similar to create SparkCluster.
 }
 
@@ -63,7 +67,7 @@ func CreateConfigurationMap(config *rest.Config, sparkConfig *crd.SparkCluster, 
 	cfg := &v1.ConfigMap{}
 	cfg.SetName(key)
 	//TODO Discover pods with a particular label: sparkcluster=trevor
-	list, err := clientset.CoreV1().Pods(oshinkoconfig.GetNameSpace()).List(metav1.ListOptions{}) //LabelSelector:"sparkcluster=trevor"})
+	list, err := clientset.CoreV1().Pods(oshinkoconfig.GetNameSpace()).List(metav1.ListOptions{ LabelSelector:"clustername="+sparkConfig.Name }) //LabelSelector:"sparkcluster=trevor"})
 	if err != nil {
 		panic(err)
 	}
@@ -95,12 +99,13 @@ func CreateCluster(config *rest.Config, sparkConfig *crd.SparkCluster) {
 
 	if sparkConfig.Spec.SparkMetrics == "prometheus" {
 		fmt.Println("Pausing for 1 min while prometheus configs get generated after pods come ready.")
-		time.Sleep(1 * time.Minute)
+		//TODO: Find a better way of knowing when a deployment is finished to run this code.
+		time.Sleep(30 * time.Second)
 
 
 		fmt.Println("sparkMasterResult.Status: ",sparkMasterResult.Status)
 		fmt.Println("sparkWorkerResult.Status: ",sparkWorkerResult.Status)
-		CreatePrometheus(config, sparkConfig)
+		CreatePrometheus(config, sparkConfig, true)
 	}
 
 }
@@ -108,6 +113,7 @@ func CreateCluster(config *rest.Config, sparkConfig *crd.SparkCluster) {
 // TODO: Pass in a clusterConfig which will contain properties
 
 type ClusterConfig struct {
+	ClusterName string
 	MasterSvcURI  string
 	ImageName     string
 	PodName       string
@@ -118,9 +124,10 @@ type ClusterConfig struct {
 	Ports         []apiv1.ContainerPort
 }
 
-func CreateNewSparkWorkers(clientset *kubernetes.Clientset, sparkConfig *crd.SparkCluster)  (*appsv1beta1.Deployment){
+func CreateNewSparkWorkers(clientset *kubernetes.Clientset, sparkConfig *crd.SparkCluster )  (*appsv1beta1.Deployment){
 	deploymentsClient := clientset.AppsV1beta1().Deployments(oshinkoconfig.GetNameSpace())
 	clusterCfg := ClusterConfig{
+		sparkConfig.Name,
 		sparkConfig.Spec.SparkMasterName + SRV_SUFFIX,
 		sparkConfig.Spec.Image,
 		sparkConfig.Spec.SparkWorkerName,
@@ -128,7 +135,7 @@ func CreateNewSparkWorkers(clientset *kubernetes.Clientset, sparkConfig *crd.Spa
 		sparkConfig.Spec.Workers,
 		map[string]string{
 			"app": sparkConfig.Name + "-worker",
-			"clustername": sparkConfig.GetObjectMeta().GetClusterName(),
+			"clustername": sparkConfig.Name,
 		}, []apiv1.EnvVar{
 			{
 				Name:  "SPARK_MASTER_ADDRESS",
@@ -236,14 +243,15 @@ func CreatePromPod(config ClusterConfig) *appsv1beta1.Deployment {
 func CreateNewSparkMaster(clientset *kubernetes.Clientset, sparkConfig *crd.SparkCluster)  (*appsv1beta1.Deployment){
 	deploymentsClient := clientset.AppsV1beta1().Deployments(oshinkoconfig.GetNameSpace())
 	clusterCfg := ClusterConfig{
+		sparkConfig.Name,
 		sparkConfig.Spec.SparkMasterName + SRV_SUFFIX,
-		"radanalyticsio/openshift-spark",
+		sparkConfig.Spec.Image,
 		sparkConfig.Spec.SparkMasterName,
 		sparkConfig.Spec.SparkMasterName,
 		1,
 		map[string]string{
 			"app": sparkConfig.Spec.SparkMasterName,
-			"clustername": sparkConfig.GetObjectMeta().GetClusterName(),
+			"clustername": sparkConfig.Name,
 		}, []apiv1.EnvVar{
 			{
 				Name:  "SPARK_MASTER_PORT",

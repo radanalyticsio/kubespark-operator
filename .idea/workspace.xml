@@ -2,19 +2,16 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="5f456487-dff1-4f27-9971-8bbe310b422d" name="Default" comment="">
-      <change beforePath="" afterPath="$PROJECT_DIR$/crd/CRDLauncher.go" />
-      <change beforePath="" afterPath="$PROJECT_DIR$/oshinko/config/CFGManager.go" />
-      <change beforePath="" afterPath="$PROJECT_DIR$/oshinko/oshinkocli/Create.go" />
-      <change beforePath="" afterPath="$PROJECT_DIR$/oshinko/oshinkocli/Delete.go" />
-      <change beforePath="" afterPath="$PROJECT_DIR$/oshinko/oshinkocli/PrometheusCfg.go" />
-      <change beforePath="" afterPath="$PROJECT_DIR$/oshinko/oshinkocli/Scale.go" />
-      <change beforePath="" afterPath="$PROJECT_DIR$/spark-operator.go" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change beforePath="$PROJECT_DIR$/Banner.txt" afterPath="$PROJECT_DIR$/Banner.txt" />
-      <change beforePath="$PROJECT_DIR$/authentication/authentication.go" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/crd/SparkClusterCRD.go" afterPath="$PROJECT_DIR$/crd/SparkClusterCRD.go" />
-      <change beforePath="$PROJECT_DIR$/spark-crd.go" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/tools/build.sh" afterPath="$PROJECT_DIR$/tools/build.sh" />
+      <change beforePath="$PROJECT_DIR$/crd/CRDLauncher.go" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/oshinko/oshinkocli/Create.go" afterPath="$PROJECT_DIR$/oshinko/oshinkocli/Create.go" />
+      <change beforePath="$PROJECT_DIR$/oshinko/oshinkocli/Delete.go" afterPath="$PROJECT_DIR$/oshinko/oshinkocli/Delete.go" />
+      <change beforePath="$PROJECT_DIR$/oshinko/oshinkocli/Scale.go" afterPath="$PROJECT_DIR$/oshinko/oshinkocli/Scale.go" />
+      <change beforePath="$PROJECT_DIR$/podDiscovery.go" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/prom-storage.yaml" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/spark-metrics-template.yaml" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/spark-operator.go" afterPath="$PROJECT_DIR$/spark-operator.go" />
+      <change beforePath="$PROJECT_DIR$/test-add.go" afterPath="$PROJECT_DIR$/test-add.go" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -25,23 +22,11 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="spark-operator.go" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/spark-operator.go">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="159">
-              <caret line="12" column="1" lean-forward="false" selection-start-line="12" selection-start-column="1" selection-end-line="12" selection-end-column="1" />
-              <folding>
-                <element signature="e#14#164#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
       <file leaf-file-name="Controller.go" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/controller/Controller.go">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="272">
-              <caret line="16" column="47" lean-forward="false" selection-start-line="16" selection-start-column="47" selection-end-line="16" selection-end-column="47" />
+            <state relative-caret-position="238">
+              <caret line="28" column="31" lean-forward="true" selection-start-line="28" selection-start-column="31" selection-end-line="28" selection-end-column="31" />
               <folding>
                 <element signature="e#20#381#0" expanded="true" />
               </folding>
@@ -49,24 +34,24 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="Banner.txt" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/Banner.txt">
+      <file leaf-file-name="Create.go" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/oshinko/oshinkocli/Create.go">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="0">
-              <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="12" selection-end-column="0" />
-              <folding />
+            <state relative-caret-position="200">
+              <caret line="69" column="142" lean-forward="true" selection-start-line="69" selection-start-column="96" selection-end-line="69" selection-end-column="142" />
+              <folding>
+                <element signature="e#20#344#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="clientset.go" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/vendor/k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/clientset.go">
+      <file leaf-file-name="podDiscovery.go" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/podDiscovery.go">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="306">
-              <caret line="18" column="0" lean-forward="false" selection-start-line="18" selection-start-column="0" selection-end-line="18" selection-end-column="0" />
-              <folding>
-                <element signature="e#590#864#0" expanded="true" />
-              </folding>
+            <state relative-caret-position="255">
+              <caret line="35" column="59" lean-forward="true" selection-start-line="35" selection-start-column="59" selection-end-line="35" selection-end-column="113" />
+              <folding />
             </state>
           </provider>
         </entry>
@@ -76,28 +61,46 @@
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="374">
               <caret line="22" column="0" lean-forward="false" selection-start-line="22" selection-start-column="0" selection-end-line="22" selection-end-column="0" />
-              <folding>
-                <element signature="e#20#32#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="Create.go" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/oshinko/oshinkocli/Create.go">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="68">
-              <caret line="4" column="4" lean-forward="false" selection-start-line="4" selection-start-column="4" selection-end-line="4" selection-end-column="4" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="Scale.go" pinned="false" current-in-tab="false">
+      <file leaf-file-name="types.go" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/vendor/k8s.io/apimachinery/pkg/apis/meta/v1/types.go">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="221">
+              <caret line="307" column="17" lean-forward="false" selection-start-line="307" selection-start-column="4" selection-end-line="307" selection-end-column="17" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="sparkcluster-operator.yaml" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/sparkcluster-operator.yaml">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="68">
+              <caret line="4" column="0" lean-forward="false" selection-start-line="4" selection-start-column="0" selection-end-line="4" selection-end-column="0" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="test-add.go" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/test-add.go">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="1309">
+              <caret line="89" column="24" lean-forward="false" selection-start-line="89" selection-start-column="24" selection-end-line="89" selection-end-column="24" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="Scale.go" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/oshinko/oshinkocli/Scale.go">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1190">
-              <caret line="70" column="17" lean-forward="false" selection-start-line="70" selection-start-column="17" selection-end-line="70" selection-end-column="17" />
+            <state relative-caret-position="891">
+              <caret line="57" column="32" lean-forward="true" selection-start-line="57" selection-start-column="32" selection-end-line="57" selection-end-column="32" />
               <folding>
                 <element signature="e#20#255#0" expanded="true" />
               </folding>
@@ -105,35 +108,23 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="CFGManager.go" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/oshinko/config/CFGManager.go">
+      <file leaf-file-name="Delete.go" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/oshinko/oshinkocli/Delete.go">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="0">
-              <caret line="0" column="15" lean-forward="false" selection-start-line="0" selection-start-column="15" selection-end-line="0" selection-end-column="15" />
+            <state relative-caret-position="319">
+              <caret line="29" column="95" lean-forward="true" selection-start-line="29" selection-start-column="95" selection-end-line="29" selection-end-column="142" />
               <folding>
-                <element signature="e#24#101#0" expanded="true" />
+                <element signature="e#20#246#0" expanded="true" />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="SparkClusterCRD.go" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/crd/SparkClusterCRD.go">
+      <file leaf-file-name="spark-cluster.yaml" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/spark-cluster.yaml">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-488">
-              <caret line="2" column="0" lean-forward="false" selection-start-line="2" selection-start-column="0" selection-end-line="2" selection-end-column="0" />
-              <folding>
-                <element signature="e#13#431#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="CRDLauncher.go" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/crd/CRDLauncher.go">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="17">
-              <caret line="1" column="0" lean-forward="false" selection-start-line="1" selection-start-column="0" selection-end-line="1" selection-end-column="0" />
+            <state relative-caret-position="85">
+              <caret line="5" column="30" lean-forward="false" selection-start-line="5" selection-start-column="30" selection-end-line="5" selection-end-column="30" />
               <folding />
             </state>
           </provider>
@@ -151,9 +142,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>InCluster</find>
-      <find>VolumeMounts</find>
-      <find>PersistentVolumeClaim</find>
       <find>apiv1</find>
       <find>Prometheus</find>
       <find>DeletePrometheusService</find>
@@ -168,7 +156,6 @@
       <find>CreateCOnfig</find>
       <find>CreatePrometheus</find>
       <find>MasterSvcURI</find>
-      <find>ClusterConfig</find>
       <find>ConfigurationMap</find>
       <find>CreateConfigurationMap</find>
       <find>ConfigMap</find>
@@ -181,6 +168,10 @@
       <find>Configmap</find>
       <find>Delete</find>
       <find>AddSpark</find>
+      <find>ClusterConfig</find>
+      <find>Get</find>
+      <find>List(metav</find>
+      <find>List(meta</find>
     </findStrings>
     <replaceStrings>
       <replace />
@@ -208,7 +199,6 @@
         <option value="$PROJECT_DIR$/client/client.go" />
         <option value="$PROJECT_DIR$/kubeauth/auth.go" />
         <option value="$PROJECT_DIR$/authentication/authentication.go" />
-        <option value="$PROJECT_DIR$/test-add.go" />
         <option value="$PROJECT_DIR$/crdfile.yaml" />
         <option value="$PROJECT_DIR$/my-spark-cluster.yaml" />
         <option value="$PROJECT_DIR$/crd/SparkClusterCRD.go" />
@@ -225,18 +215,19 @@
         <option value="$PROJECT_DIR$/sparkcluster-operator.yaml" />
         <option value="$PROJECT_DIR$/tools/permissions.sh" />
         <option value="$PROJECT_DIR$/prom-storage.yaml" />
-        <option value="$PROJECT_DIR$/podDiscovery.go" />
         <option value="$PROJECT_DIR$/oshinko/config/CFGManager.go" />
         <option value="$PROJECT_DIR$/oshinko/oshinkocli/PrometheusHelper.go" />
-        <option value="$PROJECT_DIR$/oshinko/oshinkocli/Delete.go" />
         <option value="$PROJECT_DIR$/oshinko/oshinkocli/PrometheusCfg.go" />
-        <option value="$PROJECT_DIR$/oshinko/oshinkocli/Scale.go" />
         <option value="$PROJECT_DIR$/spark-crd.go" />
-        <option value="$PROJECT_DIR$/oshinko/oshinkocli/Create.go" />
         <option value="$PROJECT_DIR$/crd/CRDLauncher.go" />
         <option value="$PROJECT_DIR$/Banner.txt" />
         <option value="$PROJECT_DIR$/controller/Controller.go" />
         <option value="$PROJECT_DIR$/spark-operator.go" />
+        <option value="$PROJECT_DIR$/test-add.go" />
+        <option value="$PROJECT_DIR$/podDiscovery.go" />
+        <option value="$PROJECT_DIR$/oshinko/oshinkocli/Create.go" />
+        <option value="$PROJECT_DIR$/oshinko/oshinkocli/Delete.go" />
+        <option value="$PROJECT_DIR$/oshinko/oshinkocli/Scale.go" />
       </list>
     </option>
   </component>
@@ -341,7 +332,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Go Build.go build spark-operator.go">
+  <component name="RunManager" selected="Go Build.go build podDiscovery.go">
     <configuration name="go build ScaleWorkers.go" type="GoApplicationRunConfiguration" factoryName="Go Application" temporary="true">
       <module name="sparkcluster-crd" />
       <working_directory value="$PROJECT_DIR$/" />
@@ -402,8 +393,8 @@
     <recent_temporary>
       <list size="4">
         <item index="0" class="java.lang.String" itemvalue="Go Build.go build spark-operator.go" />
-        <item index="1" class="java.lang.String" itemvalue="Go Build.go build spark-crd.go" />
-        <item index="2" class="java.lang.String" itemvalue="Go Build.go build podDiscovery.go" />
+        <item index="1" class="java.lang.String" itemvalue="Go Build.go build podDiscovery.go" />
+        <item index="2" class="java.lang.String" itemvalue="Go Build.go build spark-crd.go" />
         <item index="3" class="java.lang.String" itemvalue="Go Build.go build ScaleWorkers.go" />
       </list>
     </recent_temporary>
@@ -428,7 +419,6 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="0" width="1920" height="1080" extended-state="6" />
-    <editor active="true" />
     <layout>
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.123958334" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
@@ -436,7 +426,7 @@
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3291262" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.33009708" sideWeight="0.49761903" order="5" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.33009708" sideWeight="0.49761903" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.53539824" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="true" content_ui="tabs" />
@@ -555,13 +545,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/resourcedefinition.yaml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="126">
-          <caret line="7" column="19" lean-forward="false" selection-start-line="7" selection-start-column="19" selection-end-line="7" selection-end-column="19" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/authentication/authentication.go">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="164">
@@ -628,51 +611,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/sparkcluster-operator.yaml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="36">
-          <caret line="4" column="0" lean-forward="false" selection-start-line="4" selection-start-column="0" selection-end-line="4" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/spark-cluster.yaml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="90">
-          <caret line="5" column="30" lean-forward="false" selection-start-line="5" selection-start-column="30" selection-end-line="5" selection-end-column="30" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/prom-storage.yaml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="10" selection-end-column="18" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/vendor/k8s.io/api/core/v1/types.go">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="10230">
           <caret line="688" column="5" lean-forward="false" selection-start-line="688" selection-start-column="5" selection-end-line="688" selection-end-column="5" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/test-add.go">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="360">
-          <caret line="36" column="5" lean-forward="false" selection-start-line="2" selection-start-column="0" selection-end-line="36" selection-end-column="5" />
-          <folding>
-            <element signature="e#15#376#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/vendor/k8s.io/apimachinery/pkg/apis/meta/v1/types.go">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="4530">
-          <caret line="307" column="4" lean-forward="false" selection-start-line="307" selection-start-column="4" selection-end-line="307" selection-end-column="4" />
         </state>
       </provider>
     </entry>
@@ -681,16 +623,6 @@
         <state relative-caret-position="323">
           <caret line="19" column="0" lean-forward="false" selection-start-line="19" selection-start-column="0" selection-end-line="19" selection-end-column="37" />
           <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/podDiscovery.go">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="595">
-          <caret line="44" column="39" lean-forward="false" selection-start-line="44" selection-start-column="18" selection-end-line="44" selection-end-column="39" />
-          <folding>
-            <element signature="e#14#186#0" expanded="false" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -720,14 +652,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/spark-metrics-template.yaml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="102">
-          <caret line="6" column="0" lean-forward="false" selection-start-line="6" selection-start-column="0" selection-end-line="6" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/tools/permissions.sh">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="68">
@@ -736,30 +660,12 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/oshinko/oshinkocli/Delete.go">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="119">
-          <caret line="7" column="33" lean-forward="false" selection-start-line="7" selection-start-column="33" selection-end-line="7" selection-end-column="33" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/oshinko/oshinkocli/Scale.go">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1190">
-          <caret line="70" column="17" lean-forward="false" selection-start-line="70" selection-start-column="17" selection-end-line="70" selection-end-column="17" />
-          <folding>
-            <element signature="e#20#255#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/vendor/k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/clientset.go">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="306">
           <caret line="18" column="0" lean-forward="false" selection-start-line="18" selection-start-column="0" selection-end-line="18" selection-end-column="0" />
           <folding>
-            <element signature="e#590#864#0" expanded="true" />
+            <element signature="e#590#864#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -780,30 +686,12 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/oshinko/oshinkocli/PrometheusCfg.go">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="374">
-          <caret line="22" column="0" lean-forward="false" selection-start-line="22" selection-start-column="0" selection-end-line="22" selection-end-column="0" />
-          <folding>
-            <element signature="e#20#32#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/oshinko/oshinkocli/Create.go">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="68">
-          <caret line="4" column="4" lean-forward="false" selection-start-line="4" selection-start-column="4" selection-end-line="4" selection-end-column="4" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/oshinko/config/CFGManager.go">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
           <caret line="0" column="15" lean-forward="false" selection-start-line="0" selection-start-column="15" selection-end-line="0" selection-end-column="15" />
           <folding>
-            <element signature="e#24#101#0" expanded="true" />
+            <element signature="e#24#101#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -816,12 +704,12 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/controller/Controller.go">
+    <entry file="file://$PROJECT_DIR$/spark-operator.go">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="272">
-          <caret line="16" column="47" lean-forward="false" selection-start-line="16" selection-start-column="47" selection-end-line="16" selection-end-column="47" />
+        <state relative-caret-position="159">
+          <caret line="12" column="0" lean-forward="false" selection-start-line="12" selection-start-column="0" selection-end-line="12" selection-end-column="0" />
           <folding>
-            <element signature="e#20#381#0" expanded="true" />
+            <element signature="e#14#164#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -834,22 +722,124 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/prom-storage.yaml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="10" selection-end-column="18" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/resourcedefinition.yaml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="119">
+          <caret line="7" column="19" lean-forward="false" selection-start-line="7" selection-start-column="19" selection-end-line="7" selection-end-column="19" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/spark-metrics-template.yaml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="102">
+          <caret line="6" column="0" lean-forward="false" selection-start-line="6" selection-start-column="0" selection-end-line="6" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/sparkcluster-operator.yaml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="68">
+          <caret line="4" column="0" lean-forward="false" selection-start-line="4" selection-start-column="0" selection-end-line="4" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test-add.go">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1309">
+          <caret line="89" column="24" lean-forward="false" selection-start-line="89" selection-start-column="24" selection-end-line="89" selection-end-column="24" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/crd/SparkClusterCRD.go">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-488">
-          <caret line="2" column="0" lean-forward="false" selection-start-line="2" selection-start-column="0" selection-end-line="2" selection-end-column="0" />
+        <state relative-caret-position="214">
+          <caret line="45" column="5" lean-forward="false" selection-start-line="45" selection-start-column="5" selection-end-line="45" selection-end-column="5" />
           <folding>
             <element signature="e#13#431#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/spark-operator.go">
+    <entry file="file://$PROJECT_DIR$/spark-cluster.yaml">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="159">
-          <caret line="12" column="1" lean-forward="false" selection-start-line="12" selection-start-column="1" selection-end-line="12" selection-end-column="1" />
+        <state relative-caret-position="85">
+          <caret line="5" column="30" lean-forward="false" selection-start-line="5" selection-start-column="30" selection-end-line="5" selection-end-column="30" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/controller/Controller.go">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="238">
+          <caret line="28" column="31" lean-forward="true" selection-start-line="28" selection-start-column="31" selection-end-line="28" selection-end-column="31" />
           <folding>
-            <element signature="e#14#164#0" expanded="true" />
+            <element signature="e#20#381#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/vendor/k8s.io/apimachinery/pkg/apis/meta/v1/types.go">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="221">
+          <caret line="307" column="17" lean-forward="false" selection-start-line="307" selection-start-column="4" selection-end-line="307" selection-end-column="17" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/podDiscovery.go">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="255">
+          <caret line="35" column="59" lean-forward="true" selection-start-line="35" selection-start-column="59" selection-end-line="35" selection-end-column="113" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/oshinko/oshinkocli/PrometheusCfg.go">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="374">
+          <caret line="22" column="0" lean-forward="false" selection-start-line="22" selection-start-column="0" selection-end-line="22" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/oshinko/oshinkocli/Create.go">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="200">
+          <caret line="69" column="142" lean-forward="true" selection-start-line="69" selection-start-column="96" selection-end-line="69" selection-end-column="142" />
+          <folding>
+            <element signature="e#20#344#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/oshinko/oshinkocli/Delete.go">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="319">
+          <caret line="29" column="95" lean-forward="true" selection-start-line="29" selection-start-column="95" selection-end-line="29" selection-end-column="142" />
+          <folding>
+            <element signature="e#20#246#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/oshinko/oshinkocli/Scale.go">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="891">
+          <caret line="57" column="32" lean-forward="true" selection-start-line="57" selection-start-column="32" selection-end-line="57" selection-end-column="32" />
+          <folding>
+            <element signature="e#20#255#0" expanded="true" />
           </folding>
         </state>
       </provider>
