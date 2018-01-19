@@ -13,10 +13,10 @@ import (
 )
 
 const (
-	CRDPlural      string = "sparkclusters"
-	CRDGroup       string = "radanalytics.redhat.com"
-	CRDVersion     string = "v1"
-	FullCRDName    string = CRDPlural + "." + CRDGroup
+	CRDPlural   = "sparkclusters"
+	CRDGroup    = "radanalytics.redhat.com"
+	CRDVersion  = "v1"
+	FullCRDName = CRDPlural + "." + CRDGroup
 )
 
 // Create the CRD resource, ignore error if it already exists

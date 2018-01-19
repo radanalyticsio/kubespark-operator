@@ -13,7 +13,7 @@ echo "Component: $COMPONENT"
 
 echo "Building Spark Operator ..."
 echo ""
-go build -o ../_output/spark-crd ../spark-crd.go
+go build -o ../_output/spark-crd ../spark-operator.go
 echo ""
 echo "Status : Complete. Check _output directory"
 echo ""
