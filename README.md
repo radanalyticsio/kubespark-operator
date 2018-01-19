@@ -125,7 +125,9 @@ NAME DESIRED CURRENT READY AGE
 rs/prometheus-trevor-spark-master-1148891927 1 1 1 9s
 rs/trevor-spark-master-3438774284 1 1 1 9s
 rs/trevor-spark-worker-705698751 5 5 5 9s
-To get a list of spark clusters you can type `oc get spark clusters`. You can also customize it with -o custom-columns=...
+```
+
+To get a list of spark clusters you can type "oc get spark clusters". You can also customize it with -o custom-columns=...
 ```bash
 oc get sparkclusters -o custom-columns=NAME:metadata.name,WORKER:spec.workers,MASTER_URL:"spec.SparkMasterName",IMAGE:"spec.Image"
 ```
