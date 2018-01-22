@@ -14,7 +14,7 @@ labels:
 
 
 ---
-# Source: tf-job-operator-chart/templates/rbac.yaml
+
 
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: ClusterRole
@@ -83,7 +83,7 @@ roleRef:
 
 
 ---
-# Source: tf-job-operator-chart/templates/deployment.yaml
+
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:

@@ -2,10 +2,6 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="5f456487-dff1-4f27-9971-8bbe310b422d" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change beforePath="$PROJECT_DIR$/Dockerfile" afterPath="$PROJECT_DIR$/Dockerfile" />
-      <change beforePath="$PROJECT_DIR$/_output/spark-crd" afterPath="$PROJECT_DIR$/_output/spark-crd" />
-      <change beforePath="$PROJECT_DIR$/controller/Controller.go" afterPath="$PROJECT_DIR$/controller/Controller.go" />
       <change beforePath="$PROJECT_DIR$/sparkcluster-operator.yaml" afterPath="$PROJECT_DIR$/sparkcluster-operator.yaml" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -17,7 +13,7 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="Controller.go" pinned="false" current-in-tab="true">
+      <file leaf-file-name="Controller.go" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/controller/Controller.go">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="374">
@@ -101,11 +97,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="sparkcluster-operator.yaml" pinned="false" current-in-tab="false">
+      <file leaf-file-name="sparkcluster-operator.yaml" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/sparkcluster-operator.yaml">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="881">
-              <caret line="107" column="0" lean-forward="true" selection-start-line="107" selection-start-column="0" selection-end-line="107" selection-end-column="0" />
+            <state relative-caret-position="520">
+              <caret line="83" column="0" lean-forward="true" selection-start-line="83" selection-start-column="0" selection-end-line="83" selection-end-column="0" />
               <folding />
             </state>
           </provider>
@@ -219,8 +215,8 @@
         <option value="$PROJECT_DIR$/oshinko/oshinkocli/Delete.go" />
         <option value="$PROJECT_DIR$/oshinko/oshinkocli/Scale.go" />
         <option value="$PROJECT_DIR$/Dockerfile" />
-        <option value="$PROJECT_DIR$/sparkcluster-operator.yaml" />
         <option value="$PROJECT_DIR$/controller/Controller.go" />
+        <option value="$PROJECT_DIR$/sparkcluster-operator.yaml" />
       </list>
     </option>
   </component>
@@ -735,18 +731,18 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/sparkcluster-operator.yaml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="881">
-          <caret line="107" column="0" lean-forward="true" selection-start-line="107" selection-start-column="0" selection-end-line="107" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/controller/Controller.go">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="374">
           <caret line="32" column="135" lean-forward="false" selection-start-line="32" selection-start-column="135" selection-end-line="32" selection-end-column="135" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/sparkcluster-operator.yaml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="520">
+          <caret line="83" column="0" lean-forward="true" selection-start-line="83" selection-start-column="0" selection-end-line="83" selection-end-column="0" />
           <folding />
         </state>
       </provider>
