@@ -30,6 +30,7 @@ func StartController( config *rest.Config) {
 			AddFunc: func(obj interface{}) {
 				log.Printf("add: %s \n", obj)
 				cls := obj.(*crd.SparkCluster)
+				//TODO: When the cluster goes down. Check to see if the sparkcluster is online before proceeding with cluster creation.
 				oshinkocli.CreateCluster(config, cls)
 			},
 			DeleteFunc: func(obj interface{}) {
