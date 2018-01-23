@@ -354,3 +354,27 @@ func CreatePrometheusService(clusterCfg ClusterConfig, clientset *kubernetes.Cli
 }
 
 func Int32Ptr(i int32) *int32 { return &i }
+
+
+func AlreadyDeployedCheck(config *rest.Config, sparkConfig *crd.SparkCluster) bool {
+	clientset, err := kubernetes.NewForConfig(config)
+	if err != nil {
+		panic(err)
+	}
+	//list, err := clientset.CoreV1().Pods(oshinkoconfig.GetNameSpace()).List(metav1.ListOptions{ LabelSelector:"clustername="+sparkConfig.Name }) //LabelSelector:"sparkcluster=trevor"})
+	deploymentsClient := clientset.AppsV1beta1().Deployments(oshinkoconfig.GetNameSpace())
+	dep, err := deploymentsClient.Get(sparkConfig.Spec.SparkMasterName, metav1.GetOptions{})
+	if err != nil {
+		panic(err)
+	}
+	if  dep != nil  {
+		log.Println("Deployments: ",dep)
+
+		return true
+	}else{
+		log.Println("Deployment is not deployed")
+		return false
+	}
+
+
+}

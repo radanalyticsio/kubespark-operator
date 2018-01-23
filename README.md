@@ -4,7 +4,7 @@ Since kubernetes 1.7 CRD's were introduced to provide developers with a way to i
 What is a CRD?
 Custom Resource Definition - This is a native kubernetes feature that lets you create kubernetes managed objects that you can manage. This is a replacement for third party resources. The main motivation for utilizing custom resource definitions is that will allow people to prototype new features without having to set up community meetings and proposals. 
 Two ways to create CRD's:
-Via yaml:
+#### With Yaml:
 ```yaml
 apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
@@ -44,26 +44,17 @@ status:
 Via golang code: 
 /crd/SparkClusterCRD.go
 
-Prerequisite of Spark Operator:
-
-You must make sure that you have oshinko service account if you don’t then run the following commands
-```bash
-[zhassan@analytics sparkcluster-crd]$ export NS=myproject
-[zhassan@analytics sparkcluster-crd]$  export SRV_ACC=oshinko
-[zhassan@analytics sparkcluster-crd]$ oc create sa oshinko
-[zhassan@analytics sparkcluster-crd]$ oc create clusterrolebinding root-cluster-admin-binding --clusterrole=cluster-admin --serviceaccount=$NS:$SRV_ACC
- ```
  
 Installation of Spark Operator
 ```bash
- oc create -f https://raw.githubusercontent.com/radanalyticsio/kubespark-operator/master/sparkcluster-operator.yaml
+ oc create -f https://raw.githubusercontent.com/radanalyticsio/kubespark-operator/master/manifests/sparkcluster-operator.yaml
  oc new-app spark-operator
 ```
 
-What is an Operator/Controller?
-The operator aka controller is event driven and watches sparkcluster creations/updates/deletions. Clusters are created using the following command:
+### What is an Operator/Controller?
+The operator aka controller is event driven and watches sparkcluster creations/updates/deletions. 
   
-Create the following file as my-spark-cluster.yaml:
+* Create the following file as my-spark-cluster.yaml:
 
 ```yaml
 apiVersion: radanalytics.redhat.com/v1
@@ -87,7 +78,7 @@ status:
 Create:
 You can create a spark cluster execute the following command:
 ```bash
- oc create -f my-spark-cluster.yaml 
+ oc create -f manifests/spark-cluster.yaml 
 ```
 Delete:
 You can delete a spark cluster execute the following command:

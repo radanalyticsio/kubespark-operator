@@ -1,0 +1,107 @@
+kind: List
+apiVersion: v1
+metadata: {}
+items:
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: kubespark-operator
+labels:
+  app: kubespark-operator
+
+
+
+---
+
+
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRole
+metadata:
+  name: kubespark-operator
+  labels:
+    app: kubespark-operator
+rules:
+- apiGroups:
+  - radanalytics.redhat.com
+  resources:
+  - sparkclusters
+  verbs:
+  - "*"
+- apiGroups:
+  - apiextensions.k8s.io
+  resources:
+  - customresourcedefinitions
+  verbs:
+  - "*"
+- apiGroups:
+  - storage.k8s.io
+  resources:
+  - storageclasses
+  verbs:
+  - "*"
+- apiGroups:
+  - batch
+  resources:
+  - jobs
+  verbs:
+  - "*"
+- apiGroups:
+  - ""
+  resources:
+  - configmaps
+  - pods
+  - services
+  - endpoints
+  - persistentvolumeclaims
+  - events
+  verbs:
+  - "*"
+- apiGroups:
+  - apps
+  - extensions
+  resources:
+  - deployments
+  verbs:
+  - "*"
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: kubespark-operator
+  labels:
+    app: kubespark-operator
+subjects:
+- kind: ServiceAccount
+  name: kubespark-operator
+  namespace: myproject
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: kubespark-operator
+
+
+---
+
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: spark-operator
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        name: spark-operator
+    spec:
+      serviceAccountName: kubespark-operator
+      containers:
+      - name: kubespark-operator
+        image: zmhassan/oshinko-crd:latest
+        env:
+        - name: CURRENT_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+

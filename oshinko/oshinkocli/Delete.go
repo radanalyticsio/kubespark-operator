@@ -123,3 +123,4 @@ func DeleteSparkCluster(config *rest.Config, masterName string, workerName strin
 
 	log.Println("Deleted nodes")
 }
+

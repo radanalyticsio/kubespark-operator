@@ -5,8 +5,8 @@ import (
 	"github.com/zmhassan/sparkcluster-crd/oshinko/config"
 	"github.com/zmhassan/sparkcluster-crd/controller"
 	"os"
-	"log"
 	"io/ioutil"
+	"log"
 )
 
 
@@ -26,6 +26,7 @@ func main() {
 	controller.StartController(config)
 
 }
+
 func WelcomeMsg(version string) {
 	data, err := ioutil.ReadFile("Banner.txt")
 	if err != nil {

@@ -5,6 +5,7 @@ metadata:
   labels:
     radanalytics: sparkcluster
   name: "trevor"
+namespace: myproject
 spec:
   Image: radanalyticsio/openshift-spark:2.2-latest
   SparkMasterName: trevor-spark-master

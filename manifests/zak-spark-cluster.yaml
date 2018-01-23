@@ -5,7 +5,6 @@ metadata:
   labels:
     radanalytics: sparkcluster
   name: "zak"
-  namespace: myproject
 spec:
   Image: radanalyticsio/openshift-spark:2.2-latest
   SparkMasterName: zak-spark-master

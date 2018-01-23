@@ -31,7 +31,12 @@ func StartController( config *rest.Config) {
 				log.Printf("add: %s \n", obj)
 				cls := obj.(*crd.SparkCluster)
 				//TODO: When the cluster goes down. Check to see if the sparkcluster is online before proceeding with cluster creation.
-				oshinkocli.CreateCluster(config, cls)
+				if oshinkocli.AlreadyDeployedCheck(config, cls) == false {
+					oshinkocli.CreateCluster(config, cls)
+				}else {
+					log.Println("Controller is back online and all clusters are online.")
+				}
+
 			},
 			DeleteFunc: func(obj interface{}) {
 				log.Printf("delete: %s \n", obj)
