@@ -16,14 +16,18 @@ package cmd
 
 import (
 	"fmt"
-
+	"flag"
+	"os"
 	"github.com/spf13/cobra"
+	"github.com/zmhassan/sparkcluster-crd/oshinko/oshinkocli"
+	"github.com/zmhassan/sparkcluster-crd/oshinko/config"
+	"github.com/zmhassan/sparkcluster-crd/crd"
 )
 
 // deleteCmd represents the delete command
 var deleteCmd = &cobra.Command{
 	Use:   "delete",
-	Short: "A brief description of your command",
+	Short: "deletes spark cluster",
 	Long: `A longer description that spans multiple lines and likely contains examples
 and usage of using your command. For example:
 
@@ -32,6 +36,24 @@ This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("delete called")
+		kubeconf := flag.String("kubeconf", os.Getenv("HOME")+"/.kube/config", "Path to a kube config. Only required if out-of-cluster.")
+
+		flag.Parse()
+
+		config, err := oshinkoconfig.GetKubeCfg(*kubeconf)
+
+		if err != nil {
+			panic(err.Error())
+		}
+
+		clusterName:=args[0]
+
+		sparkConfig:= &crd.SparkCluster{}
+		sparkConfig.Name=clusterName
+		sparkConfig.Spec.SparkMasterName= clusterName + "-spark-master"
+		sparkConfig.Spec.SparkWorkerName=clusterName + "-spark-worker"
+
+		oshinkocli.DeleteAll(config, sparkConfig)
 	},
 }
 

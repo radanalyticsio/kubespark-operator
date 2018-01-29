@@ -13,13 +13,14 @@ import (
 )
 
 func ScaleSparkSpark(oldCluster *crd.SparkCluster, newCluster *crd.SparkCluster, config *rest.Config) {
-	log.Println("Scaling  cluster from: ", oldCluster.Spec.Workers)
+	//log.Println("Scaling  cluster from: ", oldCluster.Spec.Workers)
 	log.Println("Scaling  cluster to: ", newCluster.Spec.Workers)
 	clientset, err := kubernetes.NewForConfig(config)
 	if err != nil {
 		panic(err)
 	}
 	deploymentsClient := clientset.AppsV1beta1().Deployments(oshinkoconfig.GetNameSpace())
+	//TODO: Bug here metav1.GetOptions{} is gonna look for all spark clusters not just the one we are working with.
 	deps, err := deploymentsClient.Get(newCluster.Spec.SparkWorkerName, metav1.GetOptions{})
  	deps.Spec.Replicas = Int32Ptr(newCluster.Spec.Workers)
 	result, err := deploymentsClient.Update(deps)
@@ -32,6 +33,9 @@ func ScaleSparkSpark(oldCluster *crd.SparkCluster, newCluster *crd.SparkCluster,
 	UpdatePrometheusDeployment(config, newCluster.Spec.SparkMasterName, newCluster)
 	log.Printf("Scaled deployment complete: %q.\n", result.GetObjectMeta().GetName())
 }
+
+
+
 // TODO: Figure out a way to roll out new prometheus when users scale up or down.
 func UpdatePrometheusDeployment(config *rest.Config, masterName string, sparkConfig *crd.SparkCluster) {
  	fmt.Println("Undeploying prometheus")
@@ -43,13 +47,13 @@ func UpdatePrometheusDeployment(config *rest.Config, masterName string, sparkCon
 	log.Println("Done prometheus")
 }
 
-
+//TODO: Remove unnecessary 'value' argument as its never used.
 func UpdateConfigurationMap(config *rest.Config, sparkConfig *crd.SparkCluster, key string, value string){
 	clientset, err := kubernetes.NewForConfig(config)
 	if err != nil {
 		panic(err)
 	}
-	//TODO Discover pods with a particular label: sparkcluster=trevor
+	// TODO: Make 'clustername=' into a const.
 	list, err := clientset.CoreV1().Pods(oshinkoconfig.GetNameSpace()).List(metav1.ListOptions{LabelSelector:"clustername=" + sparkConfig.Name })
 	if err != nil {
 		panic(err)

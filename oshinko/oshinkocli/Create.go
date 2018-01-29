@@ -82,6 +82,26 @@ func CreateConfigurationMap(config *rest.Config, sparkConfig *crd.SparkCluster, 
 	fmt.Println("Created configmap")
 }
 
+func CreateSparkClusterObj(clusterName string, imageName string, numWorkers int, metrics string) *crd.SparkCluster {
+	return &crd.SparkCluster{ObjectMeta: metav1.ObjectMeta{
+		Name:   clusterName,
+		Labels: map[string]string{"radanalytics": "sparkcluster"},
+	},
+		Spec: crd.SparkClusterSpec{
+			SparkMasterName: clusterName+"-spark-master",
+			SparkWorkerName: clusterName+"-spark-worker",
+			Image:          imageName,
+			Workers:        int32(numWorkers),
+			SparkMetrics: metrics,
+		},
+		Status: crd.SparkClusterStatus{
+			State:   "created",
+			Message: "Created, not processed yet",
+		},
+	}
+}
+
+
 func CreateCluster(config *rest.Config, sparkConfig *crd.SparkCluster) {
 	clientset, err := kubernetes.NewForConfig(config)
 	if err != nil {

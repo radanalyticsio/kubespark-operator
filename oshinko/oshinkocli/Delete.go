@@ -21,6 +21,7 @@ func DeleteAll(config *rest.Config, cluster *crd.SparkCluster) {
 	DeleteConfigMap(config, cluster)
 }
 
+
 func DeleteConfigMap(config *rest.Config, sparkCluster *crd.SparkCluster) {
 	clientset, err := kubernetes.NewForConfig(config)
 	if err != nil {

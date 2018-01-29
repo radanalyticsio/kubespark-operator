@@ -15,15 +15,24 @@
 package cmd
 
 import (
+	"os"
 	"fmt"
-
+	"flag"
 	"github.com/spf13/cobra"
+	"strings"
+	"github.com/zmhassan/sparkcluster-crd/oshinko/oshinkocli"
+	"github.com/zmhassan/sparkcluster-crd/oshinko/config"
+	"strconv"
 )
+
+
+
+
 
 // createCmd represents the create command
 var createCmd = &cobra.Command{
 	Use:   "create",
-	Short: "A brief description of your command",
+	Short: "Create spark cluster ",
 	Long: `A longer description that spans multiple lines and likely contains examples
 and usage of using your command. For example:
 
@@ -31,8 +40,46 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("create called")
+
+		clicfg:=SparkCliConfig{}
+
+		for i, x := range args  {
+			fmt.Println("Arg ", i, " Item ", x)
+			//strings.Split(x, "=")
+			cliArgs:=strings.Split(x, "=")
+			if cliArgs[0] == "name" {
+				clicfg.clustername = cliArgs[1]
+			} else if cliArgs[0] == "workers" {
+				clicfg.numOfWorkers, _= strconv.Atoi(cliArgs[1])
+			} else if cliArgs[0] == "metrics" {
+				clicfg.metrics = cliArgs[1]
+			}else {
+				fmt.Println("Unknown value")
+			}
+		}
+		fmt.Println("CFG: ", clicfg)
+		CreateSparkClusterFromCli(clicfg)
+
 	},
+}
+
+func CreateSparkClusterFromCli(cliconfig SparkCliConfig) {
+
+	kubeconf := flag.String("kubeconf", os.Getenv("HOME")+"/.kube/config", "Path to a kube config. Only required if out-of-cluster.")
+
+	flag.Parse()
+
+	config, err := oshinkoconfig.GetKubeCfg(*kubeconf)
+
+	if err != nil {
+		panic(err.Error())
+	}
+
+	sparkConfig := oshinkocli.CreateSparkClusterObj(cliconfig.clustername,"radanalyticsio/openshift-spark:2.2-latest",cliconfig.numOfWorkers,cliconfig.metrics)
+
+	fmt.Println("sparkCluster: ", sparkConfig)
+
+	oshinkocli.CreateCluster(config,sparkConfig)
 }
 
 func init() {
