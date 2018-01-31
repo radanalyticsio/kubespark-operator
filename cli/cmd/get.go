@@ -16,8 +16,12 @@ package cmd
 
 import (
 	"fmt"
-
-	"github.com/spf13/cobra"
+	"strings"
+ 	"github.com/spf13/cobra"
+	"github.com/zmhassan/sparkcluster-crd/oshinko/config"
+	"flag"
+	"os"
+	"github.com/zmhassan/sparkcluster-crd/oshinko/oshinkocli"
 )
 
 // getCmd represents the get command
@@ -31,8 +35,38 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("get called")
+		clicfg:=SparkCliConfig{}
+
+		for _, x := range args  {
+ 			cliArgs:=strings.Split(x, "=")
+			if cliArgs[0] == "name" {
+				clicfg.clustername = cliArgs[1]
+			}else {
+				fmt.Println("Unknown value")
+			}
+		}
+		GetSparkCluster(clicfg)
+
 	},
+}
+
+func GetSparkCluster(cliconfig SparkCliConfig) {
+	// TODO: Get deployment for clusterName + '-spark-master'
+	kubeconf := flag.String("kubeconf", os.Getenv("HOME")+"/.kube/config", "Path to a kube config. Only required if out-of-cluster.")
+
+	flag.Parse()
+
+	config, err := oshinkoconfig.GetKubeCfg(*kubeconf)
+
+	if err != nil {
+		panic(err.Error())
+	}
+
+	dep:=oshinkocli.FindCluster(config, cliconfig.clustername)
+
+	fmt.Println("Name	 Namespace	 SparkSubmitURL")
+	fmt.Println(cliconfig.clustername,"	",dep.Namespace,"	",dep.Name+":7077")
+
 }
 
 func init() {

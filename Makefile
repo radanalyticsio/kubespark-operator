@@ -15,3 +15,5 @@ test:
 image:
 	docker build -t oshinko-rest .
 
+build-cli:
+	go build -o _output/oshinko-cli ./cli/main.go
