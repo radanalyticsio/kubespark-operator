@@ -35,22 +35,11 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		clicfg:=SparkCliConfig{}
-
-		for _, x := range args  {
- 			cliArgs:=strings.Split(x, "=")
-			if cliArgs[0] == "name" {
-				clicfg.clustername = cliArgs[1]
-			}else {
-				fmt.Println("Unknown value")
-			}
-		}
-		GetSparkCluster(clicfg)
-
+ 		GetSparkCluster(args[1])
 	},
 }
 
-func GetSparkCluster(cliconfig SparkCliConfig) {
+func GetSparkCluster(name string) {
 	// TODO: Get deployment for clusterName + '-spark-master'
 	kubeconf := flag.String("kubeconf", os.Getenv("HOME")+"/.kube/config", "Path to a kube config. Only required if out-of-cluster.")
 
@@ -62,10 +51,10 @@ func GetSparkCluster(cliconfig SparkCliConfig) {
 		panic(err.Error())
 	}
 
-	dep:=oshinkocli.FindCluster(config, cliconfig.clustername)
+	dep:=oshinkocli.FindCluster(config, name)
 
 	fmt.Println("Name	 Namespace	 SparkSubmitURL")
-	fmt.Println(cliconfig.clustername,"	",dep.Namespace,"	",dep.Name+":7077")
+	fmt.Println(name,"	",dep.Namespace,"	","spark://"+dep.Name+":7077")
 
 }
 
