@@ -18,7 +18,17 @@ func DeleteAll(config *rest.Config, cluster *crd.SparkCluster) {
 	DeleteSparkClusterService(config, cluster.Spec.SparkMasterName)
 	DeletePrometheusDeployment(config, cluster.Spec.SparkMasterName)
 	DeletePrometheusService(config, cluster.Spec.SparkMasterName)
-	DeleteJupyterService(config, cluster.Spec.SparkMasterName)
+
+	if cluster.Spec.Notebook =="jupyter"{
+		//DeleteJupyterService(config, cluster.Spec.SparkMasterName)
+		DeleteDeployment(config,cluster.Spec.SparkMasterName+"-notebook" )
+		DeleteService(config, "jupyter-"+cluster.Spec.SparkMasterName+"-notebook"+SRV_SUFFIX )
+	}
+	if cluster.Spec.Notebook == "zeppelin"{
+		DeleteDeployment(config,cluster.Spec.SparkMasterName+"-notebook" )
+		DeleteService(config, "zeppelin-"+cluster.Spec.SparkMasterName+"-notebook"+SRV_SUFFIX )
+	}
+
 	DeleteConfigMap(config, cluster)
 }
 
@@ -61,7 +71,8 @@ func DeletePrometheusService(config *rest.Config, sparkmastername string) {
 func DeleteJupyterService(config *rest.Config, sparkmastername string) {
 	clientset := GetClientSet(config)
 	deletePolicy := metav1.DeletePropagationForeground
-	svc_err := clientset.CoreV1().Services(oshinkoconfig.GetNameSpace()).Delete("jupyter-"+sparkmastername+SRV_SUFFIX, &metav1.DeleteOptions{
+	//jupyter-hk-spark-master-notebook-service
+	svc_err := clientset.CoreV1().Services(oshinkoconfig.GetNameSpace()).Delete("jupyter-"+sparkmastername+"-notebook"+SRV_SUFFIX, &metav1.DeleteOptions{
 		PropagationPolicy: &deletePolicy,
 	})
 	if svc_err != nil {
@@ -70,6 +81,23 @@ func DeleteJupyterService(config *rest.Config, sparkmastername string) {
 	log.Printf("Deleted Service %q.\n", sparkmastername+SRV_SUFFIX)
 }
 
+func DeleteService(config *rest.Config, servicename string) {
+
+
+	clientset := GetClientSet(config)
+	deletePolicy := metav1.DeletePropagationForeground
+	//jupyter-hk-spark-master-notebook-service
+	svc_err := clientset.CoreV1().Services(oshinkoconfig.GetNameSpace()).Delete(servicename, &metav1.DeleteOptions{
+	PropagationPolicy: &deletePolicy,
+	})
+	if svc_err != nil {
+	panic(svc_err)
+	}
+	log.Printf("Deleted Service %q.\n", servicename)
+
+
+
+}
 
 
 func DeleteSparkClusterService(config *rest.Config, sparkmastername string) {
@@ -87,6 +115,21 @@ func DeleteSparkClusterService(config *rest.Config, sparkmastername string) {
 
 }
 
+
+
+
+func DeleteDeployment(config *rest.Config, name string) {
+	clientset := GetClientSet(config)
+	deploymentsClient := clientset.AppsV1beta1().Deployments(oshinkoconfig.GetNameSpace())
+	deletePolicy := metav1.DeletePropagationForeground
+	if err := deploymentsClient.Delete(name, &metav1.DeleteOptions{
+		PropagationPolicy: &deletePolicy,
+	}); err != nil {
+		panic(err)
+	}
+
+	log.Println("Deleted nodes")
+}
 
 func DeletePrometheusDeployment(config *rest.Config, masterName string) {
 	clientset := GetClientSet(config)

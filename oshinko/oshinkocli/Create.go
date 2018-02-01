@@ -100,30 +100,22 @@ func CreateCluster(config *rest.Config, sparkConfig *crd.SparkCluster) {
 	log.Println("~~~~~~~~~~~~~~~~~~~")
 	log.Println("Creating SparkCluster")
 	//Deploy Spark Master
-
 	sparkMasterResult:=CreateNewSparkMaster(clientset, sparkConfig)
 	sparkWorkerResult:=CreateNewSparkWorkers(clientset, sparkConfig)
 	fmt.Println("sparkMasterResult.Status: ",sparkMasterResult.Status)
 	fmt.Println("sparkWorkerResult.Status: ",sparkWorkerResult.Status)
-
-
 	if sparkConfig.Spec.SparkMetrics == "prometheus" {
 		fmt.Println("Pausing for 1 min while prometheus configs get generated after pods come ready.")
 		//TODO: Find a better way of knowing when a deployment is finished to run this code.
 		time.Sleep(30 * time.Second)
-
-
 		fmt.Println("sparkMasterResult.Status: ",sparkMasterResult.Status)
 		fmt.Println("sparkWorkerResult.Status: ",sparkWorkerResult.Status)
 		CreatePrometheus(config, sparkConfig, true)
 	}
-
 	if sparkConfig.Spec.Notebook == "jupyter" {
-
 		CreateJupyterNotebook(config, sparkConfig, true)
 	}
 	if sparkConfig.Spec.Notebook == "zeppelin" {
-
 		CreateZeppelinNotebook(config, sparkConfig, true)
 	}
 
@@ -138,7 +130,7 @@ func CreateZeppelinNotebook(config *rest.Config, sparkConfig *crd.SparkCluster, 
 		sparkConfig.Spec.SparkMasterName + SRV_SUFFIX,
 		"rimolive/zeppelin-openshift",
 		sparkConfig.Spec.SparkMasterName+"-notebook",
-		"prom-" + sparkConfig.Spec.SparkMasterName,
+		"zeppelin-" + sparkConfig.Spec.SparkMasterName,
 		1,
 		map[string]string{
 			"app": "zeppelin-" + sparkConfig.Spec.SparkMasterName,
@@ -156,7 +148,7 @@ func CreateZeppelinNotebook(config *rest.Config, sparkConfig *crd.SparkCluster, 
 		}}
 	CreateConfigurationMap(config, sparkConfig, clusterCfg.MasterSvcURI, sparkConfig.Spec.SparkMasterName+SRV_SUFFIX+":7777")
 	log.Println("Running Deployment..")
-	deployment := CreatePromPod(clusterCfg)
+	deployment := CreatePod(clusterCfg)
 	result, err := deploymentsClient.Create(deployment)
 	if err != nil {
 		panic(err)
@@ -198,7 +190,7 @@ func CreateJupyterNotebook(config *rest.Config, sparkConfig *crd.SparkCluster, c
 		}}
 	CreateConfigurationMap(config, sparkConfig, clusterCfg.MasterSvcURI, sparkConfig.Spec.SparkMasterName+SRV_SUFFIX+":7777")
 	log.Println("Running Deployment..")
-	deployment := CreatePromPod(clusterCfg)
+	deployment := CreatePod(clusterCfg)
 	result, err := deploymentsClient.Create(deployment)
 	if err != nil {
 		panic(err)
