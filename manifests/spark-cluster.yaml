@@ -11,7 +11,7 @@ spec:
   SparkMasterName: john-spark-master
   SparkWorkerName: john-spark-worker
   sparkmetrics: prometheus
-  notebook: jupyter
+  notebook: zeppelin
   workers: 5
 status:
   message: Created, not processed yet

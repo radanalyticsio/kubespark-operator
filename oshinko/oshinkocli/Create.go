@@ -122,8 +122,54 @@ func CreateCluster(config *rest.Config, sparkConfig *crd.SparkCluster) {
 
 		CreateJupyterNotebook(config, sparkConfig, true)
 	}
+	if sparkConfig.Spec.Notebook == "zeppelin" {
+
+		CreateZeppelinNotebook(config, sparkConfig, true)
+	}
 
 }
+func CreateZeppelinNotebook(config *rest.Config, sparkConfig *crd.SparkCluster, createService bool) {
+
+	clientset := GetClientSet(config)
+	deploymentsClient := clientset.AppsV1beta1().Deployments(oshinkoconfig.GetNameSpace())
+
+	clusterCfg := ClusterConfig{
+		sparkConfig.Name,
+		sparkConfig.Spec.SparkMasterName + SRV_SUFFIX,
+		"rimolive/zeppelin-openshift",
+		sparkConfig.Spec.SparkMasterName+"-notebook",
+		"prom-" + sparkConfig.Spec.SparkMasterName,
+		1,
+		map[string]string{
+			"app": "zeppelin-" + sparkConfig.Spec.SparkMasterName,
+		}, []apiv1.EnvVar{
+			{
+				Name:  "SPARK_MASTER_PROM_URI",
+				Value: sparkConfig.Spec.SparkMasterName + SRV_SUFFIX + ":7777",
+			},
+		}, []apiv1.ContainerPort{
+			{
+				Name:          "zeppelin-notebook",
+				Protocol:      apiv1.ProtocolTCP,
+				ContainerPort: 8080,
+			},
+		}}
+	CreateConfigurationMap(config, sparkConfig, clusterCfg.MasterSvcURI, sparkConfig.Spec.SparkMasterName+SRV_SUFFIX+":7777")
+	log.Println("Running Deployment..")
+	deployment := CreatePromPod(clusterCfg)
+	result, err := deploymentsClient.Create(deployment)
+	if err != nil {
+		panic(err)
+	}
+	log.Printf("Created prometheus deployment %q.\n", result.GetObjectMeta().GetName())
+	if createService == true {
+		CreateZeppelinService(clusterCfg, clientset)
+	}
+
+}
+
+
+
 func CreateJupyterNotebook(config *rest.Config, sparkConfig *crd.SparkCluster, createService bool) {
 
 	clientset := GetClientSet(config)
@@ -163,6 +209,7 @@ func CreateJupyterNotebook(config *rest.Config, sparkConfig *crd.SparkCluster, c
 	}
 
 }
+
 
 // TODO: Pass in a clusterConfig which will contain properties
 
@@ -396,6 +443,33 @@ func CreatePrometheusService(clusterCfg ClusterConfig, clientset *kubernetes.Cli
 			Ports: []v1.ServicePort{{
 				Name: "prometheus",
 				Port: 9090,
+			}},
+		},
+	}
+	svc_result, svc_err := clientset.CoreV1().Services(oshinkoconfig.GetNameSpace()).Create(service)
+	if svc_err != nil {
+
+		panic(svc_err)
+	}
+	log.Printf("Created Service %q.\n", svc_result.GetObjectMeta().GetName())
+}
+
+func CreateZeppelinService(clusterCfg ClusterConfig, clientset *kubernetes.Clientset) {
+	service := &v1.Service{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "zeppelin-" + clusterCfg.PodName + SRV_SUFFIX,
+			Labels: map[string]string{
+				"app": "zeppelin-" + clusterCfg.MasterSvcURI + SRV_SUFFIX,
+			},
+			OwnerReferences: []metav1.OwnerReference{},
+		},
+		Spec: v1.ServiceSpec{
+			Type:      "ClusterIP",
+			ClusterIP: "None",
+			Selector:  clusterCfg.Labels,
+			Ports: []v1.ServicePort{{
+				Name: "zeppelin-web",
+				Port: 8080,
 			}},
 		},
 	}
