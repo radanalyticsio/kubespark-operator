@@ -7,18 +7,14 @@ import (
 	"time"
 	"log"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/rest"
+ 	"k8s.io/client-go/rest"
 
 )
 
 func ScaleSparkSpark(oldCluster *crd.SparkCluster, newCluster *crd.SparkCluster, config *rest.Config) {
 	//log.Println("Scaling  cluster from: ", oldCluster.Spec.Workers)
 	log.Println("Scaling  cluster to: ", newCluster.Spec.Workers)
-	clientset, err := kubernetes.NewForConfig(config)
-	if err != nil {
-		panic(err)
-	}
+	clientset := GetClientSet(config)
 	deploymentsClient := clientset.AppsV1beta1().Deployments(oshinkoconfig.GetNameSpace())
 	//TODO: Bug here metav1.GetOptions{} is gonna look for all spark clusters not just the one we are working with.
 	deps, err := deploymentsClient.Get(newCluster.Spec.SparkWorkerName, metav1.GetOptions{})
@@ -49,10 +45,7 @@ func UpdatePrometheusDeployment(config *rest.Config, masterName string, sparkCon
 
 //TODO: Remove unnecessary 'value' argument as its never used.
 func UpdateConfigurationMap(config *rest.Config, sparkConfig *crd.SparkCluster, key string, value string){
-	clientset, err := kubernetes.NewForConfig(config)
-	if err != nil {
-		panic(err)
-	}
+	clientset := GetClientSet(config)
 	// TODO: Make 'clustername=' into a const.
 	list, err := clientset.CoreV1().Pods(oshinkoconfig.GetNameSpace()).List(metav1.ListOptions{LabelSelector:"clustername=" + sparkConfig.Name })
 	if err != nil {

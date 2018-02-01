@@ -17,10 +17,7 @@ import (
 
 
 func CreatePrometheus(config *rest.Config, sparkConfig *crd.SparkCluster, createService bool) {
-	clientset, err := kubernetes.NewForConfig(config)
-	if err != nil {
-		panic(err)
-	}
+	clientset := GetClientSet(config)
 	deploymentsClient := clientset.AppsV1beta1().Deployments(oshinkoconfig.GetNameSpace())
 
 	clusterCfg := ClusterConfig{
@@ -32,7 +29,6 @@ func CreatePrometheus(config *rest.Config, sparkConfig *crd.SparkCluster, create
 		1,
 		map[string]string{
 			"app": "prometheus-" + sparkConfig.Spec.SparkMasterName,
-
 		}, []apiv1.EnvVar{
 			{
 				Name:  "SPARK_MASTER_PROM_URI",
@@ -54,16 +50,13 @@ func CreatePrometheus(config *rest.Config, sparkConfig *crd.SparkCluster, create
 	}
 	log.Printf("Created prometheus deployment %q.\n", result.GetObjectMeta().GetName())
 	if createService == true {
-	CreatePrometheusService(clusterCfg, clientset)
+		CreatePrometheusService(clusterCfg, clientset)
 	}
 	// Logic similar to create SparkCluster.
 }
 
 func CreateConfigurationMap(config *rest.Config, sparkConfig *crd.SparkCluster, key string, value string) {
-	clientset, err := kubernetes.NewForConfig(config)
-	if err != nil {
-		panic(err)
-	}
+	clientset := GetClientSet(config)
 	cfg := &v1.ConfigMap{}
 	cfg.SetName(key)
 	//TODO Discover pods with a particular label: sparkcluster=trevor
@@ -103,10 +96,7 @@ func CreateSparkClusterObj(clusterName string, imageName string, numWorkers int,
 
 
 func CreateCluster(config *rest.Config, sparkConfig *crd.SparkCluster) {
-	clientset, err := kubernetes.NewForConfig(config)
-	if err != nil {
-		panic(err)
-	}
+	clientset := GetClientSet(config)
 	log.Println("~~~~~~~~~~~~~~~~~~~")
 	log.Println("Creating SparkCluster")
 	//Deploy Spark Master
@@ -126,6 +116,50 @@ func CreateCluster(config *rest.Config, sparkConfig *crd.SparkCluster) {
 		fmt.Println("sparkMasterResult.Status: ",sparkMasterResult.Status)
 		fmt.Println("sparkWorkerResult.Status: ",sparkWorkerResult.Status)
 		CreatePrometheus(config, sparkConfig, true)
+	}
+
+	if sparkConfig.Spec.Notebook == "jupyter" {
+
+		CreateJupyterNotebook(config, sparkConfig, true)
+	}
+
+}
+func CreateJupyterNotebook(config *rest.Config, sparkConfig *crd.SparkCluster, createService bool) {
+
+	clientset := GetClientSet(config)
+	deploymentsClient := clientset.AppsV1beta1().Deployments(oshinkoconfig.GetNameSpace())
+
+	clusterCfg := ClusterConfig{
+		sparkConfig.Name,
+		sparkConfig.Spec.SparkMasterName + SRV_SUFFIX,
+		"radanalyticsio/base-notebook",
+		sparkConfig.Spec.SparkMasterName+"-notebook",
+		"prom-" + sparkConfig.Spec.SparkMasterName,
+		1,
+		map[string]string{
+			"app": "jupyter-" + sparkConfig.Spec.SparkMasterName,
+		}, []apiv1.EnvVar{
+			{
+				Name:  "SPARK_MASTER_PROM_URI",
+				Value: sparkConfig.Spec.SparkMasterName + SRV_SUFFIX + ":7777",
+			},
+		}, []apiv1.ContainerPort{
+			{
+				Name:          "jupyter-notebook",
+				Protocol:      apiv1.ProtocolTCP,
+				ContainerPort: 8888,
+			},
+		}}
+	CreateConfigurationMap(config, sparkConfig, clusterCfg.MasterSvcURI, sparkConfig.Spec.SparkMasterName+SRV_SUFFIX+":7777")
+	log.Println("Running Deployment..")
+	deployment := CreatePromPod(clusterCfg)
+	result, err := deploymentsClient.Create(deployment)
+	if err != nil {
+		panic(err)
+	}
+	log.Printf("Created prometheus deployment %q.\n", result.GetObjectMeta().GetName())
+	if createService == true {
+		CreateJupyterService(clusterCfg, clientset)
 	}
 
 }
@@ -373,50 +407,58 @@ func CreatePrometheusService(clusterCfg ClusterConfig, clientset *kubernetes.Cli
 	log.Printf("Created Service %q.\n", svc_result.GetObjectMeta().GetName())
 }
 
+func CreateJupyterService(clusterCfg ClusterConfig, clientset *kubernetes.Clientset) {
+	service := &v1.Service{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "jupyter-" + clusterCfg.PodName + SRV_SUFFIX,
+			Labels: map[string]string{
+				"app": "jupyter-" + clusterCfg.MasterSvcURI + SRV_SUFFIX,
+			},
+			OwnerReferences: []metav1.OwnerReference{},
+		},
+		Spec: v1.ServiceSpec{
+			Type:      "ClusterIP",
+			ClusterIP: "None",
+			Selector:  clusterCfg.Labels,
+			Ports: []v1.ServicePort{{
+				Name: "jupyter-web",
+				Port: 8888,
+			}},
+		},
+	}
+	svc_result, svc_err := clientset.CoreV1().Services(oshinkoconfig.GetNameSpace()).Create(service)
+	if svc_err != nil {
+
+		panic(svc_err)
+	}
+	log.Printf("Created Service %q.\n", svc_result.GetObjectMeta().GetName())
+}
+
 func Int32Ptr(i int32) *int32 { return &i }
 
 
 func FindCluster(config *rest.Config, clusterName string ) (*appsv1beta1.Deployment){
-	clientset, err := kubernetes.NewForConfig(config)
-	if err != nil {
-		panic(err)
-	}
-	//list, err := clientset.CoreV1().Pods(oshinkoconfig.GetNameSpace()).List(metav1.ListOptions{ LabelSelector:"clustername="+sparkConfig.Name }) //LabelSelector:"sparkcluster=trevor"})
+	clientset := GetClientSet(config)
 	deploymentsClient := clientset.AppsV1beta1().Deployments(oshinkoconfig.GetNameSpace())
 	dep, err := deploymentsClient.Get(clusterName+"-spark-master", metav1.GetOptions{})
 	if err != nil {
 		panic(err)
 	}
-	//if  dep != nil  {
-	//	log.Println("Deployments: ",dep)
-
 		 return dep
-	//}else{
-	//	log.Println("Deployment is not deployed")
-	//	return nil
-	//}
-
 }
 
 func AlreadyDeployedCheck(config *rest.Config, sparkConfig *crd.SparkCluster) bool {
-	clientset, err := kubernetes.NewForConfig(config)
+	clientset := GetClientSet(config)
+	list, err := clientset.CoreV1().Pods(oshinkoconfig.GetNameSpace()).List(metav1.ListOptions{LabelSelector:"clustername="+sparkConfig.Name }) //LabelSelector:"sparkcluster=trevor"})
 	if err != nil {
 		panic(err)
 	}
-	//list, err := clientset.CoreV1().Pods(oshinkoconfig.GetNameSpace()).List(metav1.ListOptions{ LabelSelector:"clustername="+sparkConfig.Name }) //LabelSelector:"sparkcluster=trevor"})
-	deploymentsClient := clientset.AppsV1beta1().Deployments(oshinkoconfig.GetNameSpace())
-	dep, err := deploymentsClient.Get(sparkConfig.Spec.SparkMasterName, metav1.GetOptions{})
-	if err != nil {
-		panic(err)
-	}
-	if  dep != nil  {
-		log.Println("Deployments: ",dep)
-
+	if len(list.Items) != 0 {
+		log.Println("Spark Cluster Exists Probably due to crash ")
 		return true
-	}else{
-		log.Println("Deployment is not deployed")
+	} else {
+		log.Println("Cluster isn't created attempting to deploy spark cluster ")
 		return false
 	}
-
 
 }

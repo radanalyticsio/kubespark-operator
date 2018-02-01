@@ -5,7 +5,7 @@ import (
 	"github.com/zmhassan/sparkcluster-crd/oshinko/config"
 	"fmt"
 	"log"
-	"k8s.io/client-go/kubernetes"
+
 	"k8s.io/client-go/rest"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -18,15 +18,13 @@ func DeleteAll(config *rest.Config, cluster *crd.SparkCluster) {
 	DeleteSparkClusterService(config, cluster.Spec.SparkMasterName)
 	DeletePrometheusDeployment(config, cluster.Spec.SparkMasterName)
 	DeletePrometheusService(config, cluster.Spec.SparkMasterName)
+	DeleteJupyterService(config, cluster.Spec.SparkMasterName)
 	DeleteConfigMap(config, cluster)
 }
 
 
 func DeleteConfigMap(config *rest.Config, sparkCluster *crd.SparkCluster) {
-	clientset, err := kubernetes.NewForConfig(config)
-	if err != nil {
-		panic(err)
-	}
+	clientset := GetClientSet(config)
 	//TODO Discover pods with a particular label: sparkcluster=trevor
 	list, err := clientset.CoreV1().Pods(oshinkoconfig.GetNameSpace()).List(metav1.ListOptions{LabelSelector:"clustername="+sparkCluster.Name }) //LabelSelector:"sparkcluster=trevor"})
 	if err != nil {
@@ -49,12 +47,21 @@ func DeleteConfigMap(config *rest.Config, sparkCluster *crd.SparkCluster) {
 
 
 func DeletePrometheusService(config *rest.Config, sparkmastername string) {
-	clientset, err := kubernetes.NewForConfig(config)
-	if err != nil {
-		panic(err)
-	}
+	clientset := GetClientSet(config)
 	deletePolicy := metav1.DeletePropagationForeground
 	svc_err := clientset.CoreV1().Services(oshinkoconfig.GetNameSpace()).Delete("prometheus-"+sparkmastername+SRV_SUFFIX, &metav1.DeleteOptions{
+		PropagationPolicy: &deletePolicy,
+	})
+	if svc_err != nil {
+		panic(svc_err)
+	}
+	log.Printf("Deleted Service %q.\n", sparkmastername+SRV_SUFFIX)
+}
+
+func DeleteJupyterService(config *rest.Config, sparkmastername string) {
+	clientset := GetClientSet(config)
+	deletePolicy := metav1.DeletePropagationForeground
+	svc_err := clientset.CoreV1().Services(oshinkoconfig.GetNameSpace()).Delete("jupyter-"+sparkmastername+SRV_SUFFIX, &metav1.DeleteOptions{
 		PropagationPolicy: &deletePolicy,
 	})
 	if svc_err != nil {
@@ -66,10 +73,7 @@ func DeletePrometheusService(config *rest.Config, sparkmastername string) {
 
 
 func DeleteSparkClusterService(config *rest.Config, sparkmastername string) {
-	clientset, err := kubernetes.NewForConfig(config)
-	if err != nil {
-		panic(err)
-	}
+	clientset := GetClientSet(config)
 	deletePolicy := metav1.DeletePropagationForeground
 	svc_err := clientset.CoreV1().Services(oshinkoconfig.GetNameSpace()).Delete(sparkmastername+SRV_SUFFIX, &metav1.DeleteOptions{
 		PropagationPolicy: &deletePolicy,
@@ -85,10 +89,7 @@ func DeleteSparkClusterService(config *rest.Config, sparkmastername string) {
 
 
 func DeletePrometheusDeployment(config *rest.Config, masterName string) {
-	clientset, err := kubernetes.NewForConfig(config)
-	if err != nil {
-		panic(err)
-	}
+	clientset := GetClientSet(config)
 	deploymentsClient := clientset.AppsV1beta1().Deployments(oshinkoconfig.GetNameSpace())
 	deletePolicy := metav1.DeletePropagationForeground
 	if err := deploymentsClient.Delete("prometheus-"+masterName, &metav1.DeleteOptions{
@@ -101,13 +102,8 @@ func DeletePrometheusDeployment(config *rest.Config, masterName string) {
 }
 
 func DeleteSparkCluster(config *rest.Config, masterName string, workerName string) {
-	clientset, err := kubernetes.NewForConfig(config)
-	if err != nil {
-		panic(err)
-	}
-
+	clientset := GetClientSet(config)
 	deploymentsClient := clientset.AppsV1beta1().Deployments(oshinkoconfig.GetNameSpace())
-
 	deletePolicy := metav1.DeletePropagationForeground
 	if err := deploymentsClient.Delete(masterName, &metav1.DeleteOptions{
 		PropagationPolicy: &deletePolicy,
