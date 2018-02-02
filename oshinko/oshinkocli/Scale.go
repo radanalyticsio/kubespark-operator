@@ -35,8 +35,8 @@ func ScaleSparkSpark(oldCluster *crd.SparkCluster, newCluster *crd.SparkCluster,
 // TODO: Figure out a way to roll out new prometheus when users scale up or down.
 func UpdatePrometheusDeployment(config *rest.Config, masterName string, sparkConfig *crd.SparkCluster) {
  	fmt.Println("Undeploying prometheus")
-	DeletePrometheusDeployment(config,masterName)
-	fmt.Println("Waiting 30 seconds")
+	DeleteDeployment(config, "prometheus-"+masterName)
+ 	fmt.Println("Waiting 30 seconds")
 	time.Sleep(10* time.Second)
 	fmt.Println("Deploying prometheus")
 	CreatePrometheus(config,sparkConfig,false)

@@ -12,6 +12,7 @@ spec:
   SparkWorkerName: john-spark-worker
   sparkmetrics: prometheus
   notebook: zeppelin
+  middleware: amq
   workers: 5
 status:
   message: Created, not processed yet

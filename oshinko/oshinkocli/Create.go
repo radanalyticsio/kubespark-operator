@@ -104,21 +104,129 @@ func CreateCluster(config *rest.Config, sparkConfig *crd.SparkCluster) {
 	sparkWorkerResult:=CreateNewSparkWorkers(clientset, sparkConfig)
 	fmt.Println("sparkMasterResult.Status: ",sparkMasterResult.Status)
 	fmt.Println("sparkWorkerResult.Status: ",sparkWorkerResult.Status)
-	if sparkConfig.Spec.SparkMetrics == "prometheus" {
-		fmt.Println("Pausing for 1 min while prometheus configs get generated after pods come ready.")
-		//TODO: Find a better way of knowing when a deployment is finished to run this code.
-		time.Sleep(30 * time.Second)
-		fmt.Println("sparkMasterResult.Status: ",sparkMasterResult.Status)
-		fmt.Println("sparkWorkerResult.Status: ",sparkWorkerResult.Status)
-		CreatePrometheus(config, sparkConfig, true)
-	}
 	if sparkConfig.Spec.Notebook == "jupyter" {
 		CreateJupyterNotebook(config, sparkConfig, true)
 	}
 	if sparkConfig.Spec.Notebook == "zeppelin" {
 		CreateZeppelinNotebook(config, sparkConfig, true)
 	}
+	if sparkConfig.Spec.Middleware == "jdg" {
+		CreateMiddleware(config, sparkConfig, true, "jdg")
+	}
+	if sparkConfig.Spec.Middleware == "amq" {
 
+		CreateMiddleware(config, sparkConfig, true, "amq")
+	}
+	if sparkConfig.Spec.SparkMetrics == "prometheus" {
+		fmt.Println("Pausing for 15 seconds while prometheus configs get generated after pods come ready.")
+		//TODO: Find a better way of knowing when a deployment is finished to run this code.
+		time.Sleep(15 * time.Second)
+		fmt.Println("sparkMasterResult.Status: ",sparkMasterResult.Status)
+		fmt.Println("sparkWorkerResult.Status: ",sparkWorkerResult.Status)
+		CreatePrometheus(config, sparkConfig, true)
+	}
+
+}
+func CreateMiddleware(config *rest.Config, sparkConfig *crd.SparkCluster, createService bool, middleware_type string) {
+	 //  jboss/infinispan-server:9.0.0.Beta1
+	clientset := GetClientSet(config)
+	deploymentsClient := clientset.AppsV1beta1().Deployments(oshinkoconfig.GetNameSpace())
+	// TODO: Must check if middleware type is not jdg then setup amq
+	//if middleware_type =="jdg"{
+	//clusterCfg := CreateJDGClusterConfig(sparkConfig)
+
+	clusterCfg := GetMiddlewareConfig(middleware_type, sparkConfig)
+
+	if middleware_type == "jdg" {
+		deployment := CreatePod(clusterCfg)
+		result, err := deploymentsClient.Create(deployment)
+		if err != nil {
+			panic(err)
+		}
+		log.Printf("Created middleware deployment %q.\n", result.GetObjectMeta().GetName())
+	}else if middleware_type == "amq"  {
+		deployment := CreateAMQPod(clusterCfg)
+		result, err := deploymentsClient.Create(deployment)
+		if err != nil {
+			panic(err)
+		}
+		log.Printf("Created middleware deployment %q.\n", result.GetObjectMeta().GetName())
+	}
+
+	if createService == true  && middleware_type == "jdg"{
+		CreateJDGService(clusterCfg, clientset)
+	}
+	if createService == true  && middleware_type == "amq"{
+		CreateAMQService(clusterCfg, clientset)
+	}
+
+}
+func GetMiddlewareConfig(middleware_type string, sparkConfig *crd.SparkCluster) ClusterConfig {
+	if middleware_type == "jdg" {
+		return  CreateJDGClusterConfig(sparkConfig)
+	} else if middleware_type == "amq" {
+		return CreateAMQConfig(sparkConfig)
+	}else {
+		return ClusterConfig{}
+	}
+}
+func CreateAMQConfig(sparkConfig *crd.SparkCluster) ClusterConfig {
+	clusterCfg := ClusterConfig{
+		sparkConfig.Name,
+		sparkConfig.Spec.SparkMasterName + SRV_SUFFIX,
+		"redhatiot/artemis:latest",
+		sparkConfig.Spec.SparkMasterName + "-middleware",
+		"amq-" + sparkConfig.Spec.SparkMasterName,
+		1,
+		map[string]string{
+			"app": "amq-" + sparkConfig.Spec.SparkMasterName,
+		}, []apiv1.EnvVar{
+			{
+				Name:  "SPARK_MASTER_PROM_URI",
+				Value: sparkConfig.Spec.SparkMasterName + SRV_SUFFIX + ":7777",
+			},
+		}, []apiv1.ContainerPort{
+			{
+				Name:          "amq-amqp-port",
+				Protocol:      apiv1.ProtocolTCP,
+				ContainerPort: 5672,
+			},
+			{
+				Name:          "amq-web-port",
+				Protocol:      apiv1.ProtocolTCP,
+				ContainerPort: 8161,
+			},
+			{
+				Name:          "amq-mqtt-port",
+				Protocol:      apiv1.ProtocolTCP,
+				ContainerPort: 1883,
+			},
+		}}
+		return clusterCfg
+}
+func CreateJDGClusterConfig(sparkConfig *crd.SparkCluster) ClusterConfig {
+	clusterCfg := ClusterConfig{
+		sparkConfig.Name,
+		sparkConfig.Spec.SparkMasterName + SRV_SUFFIX,
+		"jboss/infinispan-server:9.0.0.Beta1",
+		sparkConfig.Spec.SparkMasterName + "-middleware",
+		"jdg-" + sparkConfig.Spec.SparkMasterName,
+		1,
+		map[string]string{
+			"app": "jdg-" + sparkConfig.Spec.SparkMasterName,
+		}, []apiv1.EnvVar{
+			{
+				Name:  "SPARK_MASTER_PROM_URI",
+				Value: sparkConfig.Spec.SparkMasterName + SRV_SUFFIX + ":7777",
+			},
+		}, []apiv1.ContainerPort{
+			{
+				Name:          "jdg-hotrod-port",
+				Protocol:      apiv1.ProtocolTCP,
+				ContainerPort: 11222,
+			},
+		}}
+	return clusterCfg
 }
 func CreateZeppelinNotebook(config *rest.Config, sparkConfig *crd.SparkCluster, createService bool) {
 
@@ -282,6 +390,54 @@ func CreatePod(config ClusterConfig) *appsv1beta1.Deployment {
 	return deployment
 }
 
+
+func CreateAMQPod(config ClusterConfig) *appsv1beta1.Deployment {
+
+	deployment := &appsv1beta1.Deployment{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "amq-" + config.PodName,
+		},
+		Spec: appsv1beta1.DeploymentSpec{
+			Replicas: Int32Ptr(config.ScaleNum),
+			Template: apiv1.PodTemplateSpec{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: config.Labels,
+				},
+				Spec: apiv1.PodSpec{
+					Hostname:"amq-" + config.PodName,
+					Containers: []apiv1.Container{
+						{
+							Name:  config.ContainerName,
+							Image: config.ImageName,
+							Env:   config.EnvVar,
+							Command: []string{"/opt/apache-artemis-1.4.0/bin/run_artemis.sh"},
+							VolumeMounts: []apiv1.VolumeMount{
+								{	Name: "vol-instance",
+									MountPath: "/var/run/artemis",
+								},
+							},
+						},
+					},
+
+					Volumes: []apiv1.Volume{
+						{
+							Name: "vol-instance",
+							VolumeSource: apiv1.VolumeSource{
+								//PersistentVolumeClaim: &apiv1.PersistentVolumeClaimVolumeSource{ ClaimName: "prom-storage", ReadOnly:  false,},
+								EmptyDir: &apiv1.EmptyDirVolumeSource{},
+							},
+
+						},
+					},
+				},
+			},
+		},
+	}
+	return deployment
+}
+
+
+// TODO: Create AMQ pod with the command run:  /opt/apache-artemis-1.4.0/bin/run_artemis.sh
 func CreatePromPod(config ClusterConfig) *appsv1beta1.Deployment {
 
 	deployment := &appsv1beta1.Deployment{
@@ -441,6 +597,66 @@ func CreatePrometheusService(clusterCfg ClusterConfig, clientset *kubernetes.Cli
 	svc_result, svc_err := clientset.CoreV1().Services(oshinkoconfig.GetNameSpace()).Create(service)
 	if svc_err != nil {
 
+		panic(svc_err)
+	}
+	log.Printf("Created Service %q.\n", svc_result.GetObjectMeta().GetName())
+}
+
+
+func CreateAMQService(clusterCfg ClusterConfig, clientset *kubernetes.Clientset) {
+	service := &v1.Service{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "amq-" + clusterCfg.PodName + SRV_SUFFIX,
+			Labels: map[string]string{
+				"app": "amq-" + clusterCfg.MasterSvcURI + SRV_SUFFIX,
+			},
+			OwnerReferences: []metav1.OwnerReference{},
+		},
+		Spec: v1.ServiceSpec{
+			Type:      "ClusterIP",
+			ClusterIP: "None",
+			Selector:  clusterCfg.Labels,
+			Ports: []v1.ServicePort{{
+					Name: "amq-web-port",
+					Port: 8161,
+				},{
+					Name: "amq-amqp-port",
+					Port: 5672,
+				},
+				{
+					Name: "amq-mqtt-port",
+					Port: 1883,
+				}},
+		},
+	}
+	svc_result, svc_err := clientset.CoreV1().Services(oshinkoconfig.GetNameSpace()).Create(service)
+	if svc_err != nil {
+		panic(svc_err)
+	}
+	log.Printf("Created Service %q.\n", svc_result.GetObjectMeta().GetName())
+}
+
+func CreateJDGService(clusterCfg ClusterConfig, clientset *kubernetes.Clientset) {
+	service := &v1.Service{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "jdg-" + clusterCfg.PodName + SRV_SUFFIX,
+			Labels: map[string]string{
+				"app": "jdg-" + clusterCfg.MasterSvcURI + SRV_SUFFIX,
+			},
+			OwnerReferences: []metav1.OwnerReference{},
+		},
+		Spec: v1.ServiceSpec{
+			Type:      "ClusterIP",
+			ClusterIP: "None",
+			Selector:  clusterCfg.Labels,
+			Ports: []v1.ServicePort{{
+				Name: "jdg-hotrod-port",
+				Port: 11222,
+			}},
+		},
+	}
+ 	svc_result, svc_err := clientset.CoreV1().Services(oshinkoconfig.GetNameSpace()).Create(service)
+	if svc_err != nil {
 		panic(svc_err)
 	}
 	log.Printf("Created Service %q.\n", svc_result.GetObjectMeta().GetName())

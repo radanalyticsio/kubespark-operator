@@ -62,6 +62,7 @@ type SparkClusterSpec struct{
 	Workers int32 `json:"workers"`
 	SparkMetrics string `json:"sparkmetrics"`
 	Notebook string `json:"notebook"`
+	Middleware string `json:"middleware"`
 }
 
 type SparkClusterList struct {

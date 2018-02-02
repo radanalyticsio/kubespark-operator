@@ -25,13 +25,21 @@ func DeleteAll(config *rest.Config, cluster *crd.SparkCluster) {
 	DeleteService(config, "prometheus-"+cluster.Spec.SparkMasterName+SRV_SUFFIX)
 
 	if cluster.Spec.Notebook == "jupyter" {
-		//DeleteJupyterService(config, cluster.Spec.SparkMasterName)
-		DeleteDeployment(config, cluster.Spec.SparkMasterName+"-notebook")
+ 		DeleteDeployment(config, cluster.Spec.SparkMasterName+"-notebook")
 		DeleteService(config, "jupyter-"+cluster.Spec.SparkMasterName+"-notebook"+SRV_SUFFIX)
 	}
 	if cluster.Spec.Notebook == "zeppelin" {
 		DeleteDeployment(config, cluster.Spec.SparkMasterName+"-notebook")
 		DeleteService(config, "zeppelin-"+cluster.Spec.SparkMasterName+"-notebook"+SRV_SUFFIX)
+	}
+	if cluster.Spec.Middleware == "jdg" {
+		DeleteDeployment(config, "jdg-"+cluster.Spec.SparkMasterName+"-middleware")
+		DeleteService(config, "jdg-"+cluster.Spec.SparkMasterName+"-middleware"+SRV_SUFFIX)
+	}
+	if cluster.Spec.Middleware == "amq"{
+
+		DeleteDeployment(config, "amq-"+cluster.Spec.SparkMasterName+"-middleware")
+		DeleteService(config, "amq-"+cluster.Spec.SparkMasterName+"-middleware"+SRV_SUFFIX)
 	}
 	DeleteConfigMap(config, cluster)
 }
