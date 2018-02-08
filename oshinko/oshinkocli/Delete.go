@@ -21,9 +21,14 @@ func DeleteAll(config *rest.Config, cluster *crd.SparkCluster) {
 	DeleteService(config, cluster.Spec.SparkMasterName+SRV_SUFFIX)
 
 	// Deleting Prometheus
-	DeleteDeployment(config, "prometheus-"+cluster.Spec.SparkMasterName)
-	DeleteService(config, "prometheus-"+cluster.Spec.SparkMasterName+SRV_SUFFIX)
+	if cluster.Spec.SparkMetrics == "prometheus"{
 
+		DeleteDeployment(config, "prometheus-"+cluster.Spec.SparkMasterName)
+		DeleteService(config, "prometheus-"+cluster.Spec.SparkMasterName+SRV_SUFFIX)
+		DeleteDeployment(config, "alertmanager-"+cluster.Spec.SparkMasterName)
+		DeleteService(config, "alertmanager-"+cluster.Spec.SparkMasterName+SRV_SUFFIX)
+
+	}
 	if cluster.Spec.Notebook == "jupyter" {
  		DeleteDeployment(config, cluster.Spec.SparkMasterName+"-notebook")
 		DeleteService(config, "jupyter-"+cluster.Spec.SparkMasterName+"-notebook"+SRV_SUFFIX)

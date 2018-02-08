@@ -16,6 +16,44 @@ import (
 
 
 
+func CreateAlertManager(config *rest.Config, sparkConfig *crd.SparkCluster, createService bool) {
+	clientset := GetClientSet(config)
+	deploymentsClient := clientset.AppsV1beta1().Deployments(oshinkoconfig.GetNameSpace())
+
+	clusterCfg := ClusterConfig{
+		sparkConfig.Name,
+		sparkConfig.Spec.SparkMasterName + SRV_SUFFIX,
+		"prom/alertmanager",
+		"alertmanager-"+sparkConfig.Spec.SparkMasterName,
+		"alertmanager-" + sparkConfig.Spec.SparkMasterName,
+		1,
+		map[string]string{
+			"app": "alertmanager-" + sparkConfig.Spec.SparkMasterName,
+		}, []apiv1.EnvVar{
+			{
+				Name:  "SPARK_MASTER_PROM_URI",
+				Value: sparkConfig.Spec.SparkMasterName + SRV_SUFFIX + ":7777",
+			},
+		}, []apiv1.ContainerPort{
+			{
+				Name:          "alertmanager-web",
+				Protocol:      apiv1.ProtocolTCP,
+				ContainerPort: 9093,
+			},
+		}}
+	log.Println("Running Deployment..")
+	deployment := CreatePod(clusterCfg)
+	result, err := deploymentsClient.Create(deployment)
+	if err != nil {
+		panic(err)
+	}
+	log.Printf("Created alert manager deployment %q.\n", result.GetObjectMeta().GetName())
+	if createService == true {
+		CreateAlertManagerService(clusterCfg, clientset)
+	}
+	// Logic similar to create SparkCluster.
+}
+
 func CreatePrometheus(config *rest.Config, sparkConfig *crd.SparkCluster, createService bool) {
 	clientset := GetClientSet(config)
 	deploymentsClient := clientset.AppsV1beta1().Deployments(oshinkoconfig.GetNameSpace())
@@ -41,6 +79,7 @@ func CreatePrometheus(config *rest.Config, sparkConfig *crd.SparkCluster, create
 				ContainerPort: 9090,
 			},
 		}}
+		//TODO: Need to be able to inject custom rules.
 	CreateConfigurationMap(config, sparkConfig, clusterCfg.MasterSvcURI, sparkConfig.Spec.SparkMasterName+SRV_SUFFIX+":7777")
 	log.Println("Running Deployment..")
 	deployment := CreatePromPod(clusterCfg)
@@ -104,6 +143,8 @@ func CreateCluster(config *rest.Config, sparkConfig *crd.SparkCluster) {
 	sparkWorkerResult:=CreateNewSparkWorkers(clientset, sparkConfig)
 	fmt.Println("sparkMasterResult.Status: ",sparkMasterResult.Status)
 	fmt.Println("sparkWorkerResult.Status: ",sparkWorkerResult.Status)
+
+
 	if sparkConfig.Spec.Notebook == "jupyter" {
 		CreateJupyterNotebook(config, sparkConfig, true)
 	}
@@ -123,7 +164,12 @@ func CreateCluster(config *rest.Config, sparkConfig *crd.SparkCluster) {
 		time.Sleep(15 * time.Second)
 		fmt.Println("sparkMasterResult.Status: ",sparkMasterResult.Status)
 		fmt.Println("sparkWorkerResult.Status: ",sparkWorkerResult.Status)
+		if sparkConfig.Spec.Alertrules !="" {
+			fmt.Println("Deploying alertmanager rules "+ sparkConfig.Spec.Alertrules)
+			CreateAlertManager(config, sparkConfig, true)
+		}
 		CreatePrometheus(config, sparkConfig, true)
+
 	}
 
 }
@@ -175,7 +221,7 @@ func CreateAMQConfig(sparkConfig *crd.SparkCluster) ClusterConfig {
 		sparkConfig.Name,
 		sparkConfig.Spec.SparkMasterName + SRV_SUFFIX,
 		"redhatiot/artemis:latest",
-		sparkConfig.Spec.SparkMasterName + "-middleware",
+		"amq-" +sparkConfig.Spec.SparkMasterName + "-middleware",
 		"amq-" + sparkConfig.Spec.SparkMasterName,
 		1,
 		map[string]string{
@@ -209,7 +255,7 @@ func CreateJDGClusterConfig(sparkConfig *crd.SparkCluster) ClusterConfig {
 		sparkConfig.Name,
 		sparkConfig.Spec.SparkMasterName + SRV_SUFFIX,
 		"jboss/infinispan-server:9.0.0.Beta1",
-		sparkConfig.Spec.SparkMasterName + "-middleware",
+		"jdg-"+sparkConfig.Spec.SparkMasterName + "-middleware",
 		"jdg-" + sparkConfig.Spec.SparkMasterName,
 		1,
 		map[string]string{
@@ -575,6 +621,34 @@ func CreateSparkClusterService(clusterCfg ClusterConfig, clientset *kubernetes.C
 	log.Printf("Created Service %q.\n", svc_result.GetObjectMeta().GetName())
 }
 
+func CreateAlertManagerService(clusterCfg ClusterConfig, clientset *kubernetes.Clientset) {
+	service := &v1.Service{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:  clusterCfg.PodName + SRV_SUFFIX,
+			Labels: map[string]string{
+				"app": "alertmanager-" + clusterCfg.MasterSvcURI + SRV_SUFFIX,
+			},
+			OwnerReferences: []metav1.OwnerReference{},
+		},
+		Spec: v1.ServiceSpec{
+			Type:      "ClusterIP",
+			ClusterIP: "None",
+			Selector:  clusterCfg.Labels,
+			Ports: []v1.ServicePort{{
+				Name: "alertmanager-web",
+				Port: 9093,
+			}},
+		},
+	}
+	svc_result, svc_err := clientset.CoreV1().Services(oshinkoconfig.GetNameSpace()).Create(service)
+	if svc_err != nil {
+
+		panic(svc_err)
+	}
+	log.Printf("Created Service %q.\n", svc_result.GetObjectMeta().GetName())
+}
+
+
 func CreatePrometheusService(clusterCfg ClusterConfig, clientset *kubernetes.Clientset) {
 	service := &v1.Service{
 		ObjectMeta: metav1.ObjectMeta{
@@ -639,7 +713,7 @@ func CreateAMQService(clusterCfg ClusterConfig, clientset *kubernetes.Clientset)
 func CreateJDGService(clusterCfg ClusterConfig, clientset *kubernetes.Clientset) {
 	service := &v1.Service{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: "jdg-" + clusterCfg.PodName + SRV_SUFFIX,
+			Name:  clusterCfg.PodName + SRV_SUFFIX,
 			Labels: map[string]string{
 				"app": "jdg-" + clusterCfg.MasterSvcURI + SRV_SUFFIX,
 			},

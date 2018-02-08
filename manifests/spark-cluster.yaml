@@ -1,19 +1,20 @@
 apiVersion: radanalytics.redhat.com/v1
 kind: SparkCluster
 metadata:
-  clusterName: "john"
+  clusterName: "erik"
   labels:
     radanalytics: sparkcluster
-  name: "john"
+  name: "erik"
 namespace: myproject
 spec:
   Image: radanalyticsio/openshift-spark:2.2-latest
-  SparkMasterName: john-spark-master
-  SparkWorkerName: john-spark-worker
+  SparkMasterName: erik-spark-master
+  SparkWorkerName: erik-spark-worker
   sparkmetrics: prometheus
-  notebook: zeppelin
-  middleware: amq
-  workers: 5
+  alertrules: uptime
+  notebook: jupyter
+  middleware: jdg
+  workers: 7
 status:
   message: Created, not processed yet
   state: created

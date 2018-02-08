@@ -63,7 +63,10 @@ type SparkClusterSpec struct{
 	SparkMetrics string `json:"sparkmetrics"`
 	Notebook string `json:"notebook"`
 	Middleware string `json:"middleware"`
+	Alertrules string `json:"alertrules"`
 }
+
+
 
 type SparkClusterList struct {
 	meta_v1.TypeMeta `json:",inline"`
