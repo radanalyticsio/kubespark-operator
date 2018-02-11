@@ -89,7 +89,8 @@ func CreatePrometheus(config *rest.Config, sparkConfig *crd.SparkCluster, create
 	}
 	log.Printf("Created prometheus deployment %q.\n", result.GetObjectMeta().GetName())
 	if createService == true {
-		CreatePrometheusService(clusterCfg, clientset)
+		CreateServiceObject(clusterCfg, clientset , "prometheus-", "prometheus", 9090 )
+		//CreatePrometheusService(clusterCfg, clientset)
 	}
 	// Logic similar to create SparkCluster.
 }
@@ -109,7 +110,7 @@ func CreateConfigurationMap(config *rest.Config, sparkConfig *crd.SparkCluster, 
 		promCfg+=AddSparkNodeToMonitor(d.Name, d.Status.PodIP+":7777")
 	}
 
-	cfg.Data = map[string]string{"prometheus.yml": promCfg}
+	cfg.Data = map[string]string{"prometheus.yml": promCfg, "simple_rule.yml": GetSimpleRule() }
 	clientset.CoreV1().ConfigMaps(oshinkoconfig.GetNameSpace()).Create(cfg)
 	fmt.Println("Created configmap")
 }
@@ -161,7 +162,7 @@ func CreateCluster(config *rest.Config, sparkConfig *crd.SparkCluster) {
 	if sparkConfig.Spec.SparkMetrics == "prometheus" {
 		fmt.Println("Pausing for 15 seconds while prometheus configs get generated after pods come ready.")
 		//TODO: Find a better way of knowing when a deployment is finished to run this code.
-		time.Sleep(15 * time.Second)
+		time.Sleep(30 * time.Second)
 		fmt.Println("sparkMasterResult.Status: ",sparkMasterResult.Status)
 		fmt.Println("sparkWorkerResult.Status: ",sparkWorkerResult.Status)
 		if sparkConfig.Spec.Alertrules !="" {
@@ -200,7 +201,8 @@ func CreateMiddleware(config *rest.Config, sparkConfig *crd.SparkCluster, create
 	}
 
 	if createService == true  && middleware_type == "jdg"{
-		CreateJDGService(clusterCfg, clientset)
+		CreateServiceObject(clusterCfg, clientset , "jdg-", "jdg-hotrod-port", 11222 )
+		//CreateJDGService(clusterCfg, clientset)
 	}
 	if createService == true  && middleware_type == "amq"{
 		CreateAMQService(clusterCfg, clientset)
@@ -300,7 +302,7 @@ func CreateZeppelinNotebook(config *rest.Config, sparkConfig *crd.SparkCluster, 
 				ContainerPort: 8080,
 			},
 		}}
-	CreateConfigurationMap(config, sparkConfig, clusterCfg.MasterSvcURI, sparkConfig.Spec.SparkMasterName+SRV_SUFFIX+":7777")
+	//CreateConfigurationMap(config, sparkConfig, clusterCfg.MasterSvcURI, sparkConfig.Spec.SparkMasterName+SRV_SUFFIX+":7777")
 	log.Println("Running Deployment..")
 	deployment := CreatePod(clusterCfg)
 	result, err := deploymentsClient.Create(deployment)
@@ -342,7 +344,7 @@ func CreateJupyterNotebook(config *rest.Config, sparkConfig *crd.SparkCluster, c
 				ContainerPort: 8888,
 			},
 		}}
-	CreateConfigurationMap(config, sparkConfig, clusterCfg.MasterSvcURI, sparkConfig.Spec.SparkMasterName+SRV_SUFFIX+":7777")
+	//CreateConfigurationMap(config, sparkConfig, clusterCfg.MasterSvcURI, sparkConfig.Spec.SparkMasterName+SRV_SUFFIX+":7777")
 	log.Println("Running Deployment..")
 	deployment := CreatePod(clusterCfg)
 	result, err := deploymentsClient.Create(deployment)
@@ -648,6 +650,35 @@ func CreateAlertManagerService(clusterCfg ClusterConfig, clientset *kubernetes.C
 	log.Printf("Created Service %q.\n", svc_result.GetObjectMeta().GetName())
 }
 
+// CreateServiceObject( ? , ? , "prometheus-", "prometheus", 9090 )
+// TODO: prefix == '"prometheus-"`
+func CreateServiceObject(clusterCfg ClusterConfig, clientset *kubernetes.Clientset, prefix string, portname string, portNum int32){
+	service := &v1.Service{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: prefix + clusterCfg.PodName + SRV_SUFFIX,
+			Labels: map[string]string{
+				"app": prefix + clusterCfg.MasterSvcURI + SRV_SUFFIX,
+			},
+			OwnerReferences: []metav1.OwnerReference{},
+		},
+		Spec: v1.ServiceSpec{
+			Type:      "ClusterIP",
+			ClusterIP: "None",
+			Selector:  clusterCfg.Labels,
+			Ports: []v1.ServicePort{{
+				Name: portname,
+				Port: portNum,
+			}},
+		},
+	}
+	svc_result, svc_err := clientset.CoreV1().Services(oshinkoconfig.GetNameSpace()).Create(service)
+	if svc_err != nil {
+
+		panic(svc_err)
+	}
+	log.Printf("Created Service %q.\n", svc_result.GetObjectMeta().GetName())
+}
+
 
 func CreatePrometheusService(clusterCfg ClusterConfig, clientset *kubernetes.Clientset) {
 	service := &v1.Service{
@@ -709,7 +740,7 @@ func CreateAMQService(clusterCfg ClusterConfig, clientset *kubernetes.Clientset)
 	}
 	log.Printf("Created Service %q.\n", svc_result.GetObjectMeta().GetName())
 }
-
+//
 func CreateJDGService(clusterCfg ClusterConfig, clientset *kubernetes.Clientset) {
 	service := &v1.Service{
 		ObjectMeta: metav1.ObjectMeta{

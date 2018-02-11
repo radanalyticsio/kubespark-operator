@@ -39,7 +39,7 @@ func DeleteAll(config *rest.Config, cluster *crd.SparkCluster) {
 	}
 	if cluster.Spec.Middleware == "jdg" {
 		DeleteDeployment(config, "jdg-"+cluster.Spec.SparkMasterName+"-middleware")
-		DeleteService(config, "jdg-"+cluster.Spec.SparkMasterName+"-middleware"+SRV_SUFFIX)
+		DeleteService(config, "jdg-jdg-"+cluster.Spec.SparkMasterName+"-middleware"+SRV_SUFFIX)
 	}
 	if cluster.Spec.Middleware == "amq"{
 
