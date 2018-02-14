@@ -1,0 +1,18 @@
+apiVersion: radanalytics.redhat.com/v1
+kind: SparkJob
+metadata:
+  sparkjobname: "wordcount"
+  labels:
+    radanalytics: sparkjob
+  name: "wordcount"
+namespace: myproject
+spec:
+  Image: "radanalyticsio/openshift-spark:2.2-latest"
+  SparkMasterURL: "spark://erik-spark-master-service:7077"
+  AppName: wordcount
+  SourceCode: "/opt/spark/examples/jars/spark-examples_2.11-2.2.0.jar"
+  AppArgs: "10"
+  Ephemeral: true
+status:
+  message: Created, not processed yet
+  state: created

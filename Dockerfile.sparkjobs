@@ -1,0 +1,5 @@
+FROM golang
+ADD _output/spark-job-crd /spark-job-crd
+ADD Banner.txt /
+USER 185
+ENTRYPOINT ["/spark-job-crd"]

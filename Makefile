@@ -15,8 +15,12 @@ test:
 image:
 	docker build -t oshinko-rest .
 
-build-operator:
-    go build -o _output/spark-crd spark-operator.go
+build-cluster-operator:
+    go build -o _output/spark-crd spark-cluster-operator.go
+
+build-job-operator:
+    go build -o _output/spark-job-crd spark-job-operator.go
+
 
 build-cli:
 	go build -o _output/oshinko-cli ./cli/main.go

@@ -135,6 +135,27 @@ func CreateSparkClusterObj(clusterName string, imageName string, numWorkers int,
 }
 
 
+func CreateJob(config *rest.Config, sparkJobConfig *crd.SparkJob) {
+	clientset := GetClientSet(config)
+	sparkJobResult := CreateSparkJob(clientset, sparkJobConfig)
+	fmt.Println("sparkMasterResult.Status: ",sparkJobResult.Status)
+}
+func CreateSparkJob(clientset *kubernetes.Clientset, job *crd.SparkJob) (*appsv1beta1.Deployment) {
+	deploymentsClient := clientset.AppsV1beta1().Deployments(oshinkoconfig.GetNameSpace())
+
+	log.Println("Running Deployment..")
+	deployment := CreateSparkJobPod(job)
+	result, err := deploymentsClient.Create(deployment)
+	if err != nil {
+		panic(err)
+	}
+	log.Printf("Created deployment %q.\n", result.GetObjectMeta().GetName())
+
+	return result
+
+}
+
+
 func CreateCluster(config *rest.Config, sparkConfig *crd.SparkCluster) {
 	clientset := GetClientSet(config)
 	log.Println("~~~~~~~~~~~~~~~~~~~")
@@ -407,6 +428,42 @@ func CreateNewSparkWorkers(clientset *kubernetes.Clientset, sparkConfig *crd.Spa
 	log.Printf("Created deployment %q.\n", result.GetObjectMeta().GetName())
 
 	return result
+}
+
+
+
+func CreateSparkJobPod(job *crd.SparkJob) *appsv1beta1.Deployment {
+	deployment := &appsv1beta1.Deployment{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: job.Name,
+		},
+		Spec: appsv1beta1.DeploymentSpec{
+			Replicas: Int32Ptr(1),
+			Template: apiv1.PodTemplateSpec{
+
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: map[string]string{
+						"job": job.Name,
+					} ,
+				},
+				Spec: apiv1.PodSpec{
+					Containers: []apiv1.Container{
+						{
+							Name:  job.Name,
+							Image: job.Spec.Image,
+							Env: []apiv1.EnvVar{
+								{
+									Name:  "SPARK_USER",
+									Value: "jobrunner",
+								}},
+							Command: []string{"/opt/spark/bin/spark-submit --conf spark.jars.ivy=/tmp/.ivy2 --class org.apache.spark.examples.SparkPi --master spark://erik-spark-master-service:7077 /opt/spark/examples/jars/spark-examples_2.11-2.2.0.jar 10"},
+						},
+					},
+				},
+			},
+		},
+	}
+	return deployment
 }
 
 // Generic Function for pod creations

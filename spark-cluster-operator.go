@@ -22,8 +22,8 @@ func main() {
 	}
 
 	WelcomeMsg("0.0.1-SNAPSHOT")
-	controller.CreateCRDResource(config)
-	controller.StartController(config)
+	controller.CreateSparkClusterCRDResource(config)
+	controller.StartSparkClusterController(config)
 
 }
 
@@ -34,7 +34,7 @@ func WelcomeMsg(version string) {
 		os.Exit(1)
 	}
 	log.Println(string(data))
-
+	log.Println("Component: ", " Spark Cluster Ops ")
 	log.Println("Version: ", version)
 }
 
