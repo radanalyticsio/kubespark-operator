@@ -12,8 +12,6 @@ spec:
   SparkWorkerName: erik-spark-worker
   sparkmetrics: prometheus
   alertrules: uptime
-  notebook: jupyter
-  middleware: jdg
   workers: 7
 status:
   message: Created, not processed yet

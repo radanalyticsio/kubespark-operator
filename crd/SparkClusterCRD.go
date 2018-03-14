@@ -66,9 +66,8 @@ type SparkClusterSpec struct{
 	Image string `json"image"`
 	Workers int32 `json:"workers"`
 	SparkMetrics string `json:"sparkmetrics"`
-	Notebook string `json:"notebook"`
-	Middleware string `json:"middleware"`
 	Alertrules string `json:"alertrules"`
+	//NodeSelector string `json:"nodeselector"`
 }
 
 

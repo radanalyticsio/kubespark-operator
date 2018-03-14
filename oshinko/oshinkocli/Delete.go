@@ -14,12 +14,10 @@ const SRV_SUFFIX = "-service"
 
 //Wrapper - For deleting All
 func DeleteAll(config *rest.Config, cluster *crd.SparkCluster) {
-
 	// Deleting spark cluster and service for spark master
 	DeleteDeployment(config, cluster.Spec.SparkMasterName)
 	DeleteDeployment(config, cluster.Spec.SparkWorkerName)
 	DeleteService(config, cluster.Spec.SparkMasterName+SRV_SUFFIX)
-
 	// Deleting Prometheus
 	if cluster.Spec.SparkMetrics == "prometheus"{
 
@@ -28,23 +26,6 @@ func DeleteAll(config *rest.Config, cluster *crd.SparkCluster) {
 		DeleteDeployment(config, "alertmanager-"+cluster.Spec.SparkMasterName)
 		DeleteService(config, "alertmanager-"+cluster.Spec.SparkMasterName+SRV_SUFFIX)
 
-	}
-	if cluster.Spec.Notebook == "jupyter" {
- 		DeleteDeployment(config, cluster.Spec.SparkMasterName+"-notebook")
-		DeleteService(config, "jupyter-"+cluster.Spec.SparkMasterName+"-notebook"+SRV_SUFFIX)
-	}
-	if cluster.Spec.Notebook == "zeppelin" {
-		DeleteDeployment(config, cluster.Spec.SparkMasterName+"-notebook")
-		DeleteService(config, "zeppelin-"+cluster.Spec.SparkMasterName+"-notebook"+SRV_SUFFIX)
-	}
-	if cluster.Spec.Middleware == "jdg" {
-		DeleteDeployment(config, "jdg-"+cluster.Spec.SparkMasterName+"-middleware")
-		DeleteService(config, "jdg-jdg-"+cluster.Spec.SparkMasterName+"-middleware"+SRV_SUFFIX)
-	}
-	if cluster.Spec.Middleware == "amq"{
-
-		DeleteDeployment(config, "amq-"+cluster.Spec.SparkMasterName+"-middleware")
-		DeleteService(config, "amq-"+cluster.Spec.SparkMasterName+"-middleware"+SRV_SUFFIX)
 	}
 	DeleteConfigMap(config, cluster)
 }
