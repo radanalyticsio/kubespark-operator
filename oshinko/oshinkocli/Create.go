@@ -28,6 +28,8 @@ func CreateAlertManager(config *rest.Config, sparkConfig *crd.SparkCluster, crea
 		"alertmanager-" + sparkConfig.Spec.SparkMasterName,
 		1,
 		map[string]string{
+			"deployment-mode":"crd",
+			"clustername": sparkConfig.Name,
 			"app": "alertmanager-" + sparkConfig.Spec.SparkMasterName,
 		}, []apiv1.EnvVar{
 			{
@@ -211,7 +213,8 @@ func CreateNewSparkWorkers(clientset *kubernetes.Clientset, sparkConfig *crd.Spa
 			"oshinko-cluster": sparkConfig.Name,
 			"oshinko-type": "worker",
 			"clustername": sparkConfig.Name,
-		}, []apiv1.EnvVar{
+			"deployment-mode":"crd",
+ 		}, []apiv1.EnvVar{
 			{
 				Name:  "SPARK_MASTER_ADDRESS",
 				Value: "spark://" + sparkConfig.Spec.SparkMasterName + SRV_SUFFIX + ":7077",
@@ -370,7 +373,8 @@ func CreateNewSparkMaster(clientset *kubernetes.Clientset, sparkConfig *crd.Spar
 			"oshinko-cluster": sparkConfig.Name,
 			"oshinko-type": "master",
 			"clustername": sparkConfig.Name,
-		}, []apiv1.EnvVar{
+			"deployment-mode":"crd",
+ 		}, []apiv1.EnvVar{
 			{
 				Name:  "SPARK_MASTER_PORT",
 				Value: "7077",
