@@ -405,6 +405,8 @@ func CreateNewSparkWorkers(clientset *kubernetes.Clientset, sparkConfig *crd.Spa
 		sparkConfig.Spec.Workers,
 		map[string]string{
 			"app": sparkConfig.Name + "-worker",
+			"oshinko-cluster": sparkConfig.Name,
+			"oshinko-type": "worker",
 			"clustername": sparkConfig.Name,
 		}, []apiv1.EnvVar{
 			{
@@ -474,19 +476,22 @@ func CreatePod(config ClusterConfig) *appsv1beta1.Deployment {
 		},
 		Spec: appsv1beta1.DeploymentSpec{
 			Replicas: Int32Ptr(config.ScaleNum),
+
 			Template: apiv1.PodTemplateSpec{
 
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: config.Labels,
 				},
 				Spec: apiv1.PodSpec{
-					Hostname: config.PodName,
+					//NodeSelector: map[string]string{ "region":"primary" },
 					Containers: []apiv1.Container{
 						{
 							Name:  config.ContainerName,
 							Image: config.ImageName,
 							Env:   config.EnvVar,
+
 						},
+
 					},
 				},
 			},
@@ -605,6 +610,8 @@ func CreateNewSparkMaster(clientset *kubernetes.Clientset, sparkConfig *crd.Spar
 		1,
 		map[string]string{
 			"app": sparkConfig.Spec.SparkMasterName,
+			"oshinko-cluster": sparkConfig.Name,
+			"oshinko-type": "master",
 			"clustername": sparkConfig.Name,
 		}, []apiv1.EnvVar{
 			{
@@ -665,12 +672,29 @@ func CreateSparkClusterService(clusterCfg ClusterConfig, clientset *kubernetes.C
 			}, {
 				Name: "prometheus",
 				Port: 7777,
-			}, {
+			}},
+		},
+	}
+
+	service1 := &v1.Service{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: clusterCfg.MasterSvcURI+"-ui",
+			Labels: map[string]string{
+				"app": "spark",
+			},
+			OwnerReferences: []metav1.OwnerReference{},
+		},
+		Spec: v1.ServiceSpec{
+			Type:      "ClusterIP",
+			ClusterIP: "None",
+			Selector:  clusterCfg.Labels,
+			Ports: []v1.ServicePort{{
 				Name: "http",
 				Port: 8080,
 			}},
 		},
 	}
+
 	svc_result, svc_err := clientset.CoreV1().Services(oshinkoconfig.GetNameSpace()).Create(service)
 
 	if svc_err != nil {
@@ -678,6 +702,14 @@ func CreateSparkClusterService(clusterCfg ClusterConfig, clientset *kubernetes.C
 		panic(svc_err)
 	}
 	log.Printf("Created Service %q.\n", svc_result.GetObjectMeta().GetName())
+
+	svc_result1, svc_err1 := clientset.CoreV1().Services(oshinkoconfig.GetNameSpace()).Create(service1)
+
+	if svc_err1 != nil {
+
+		panic(svc_err)
+	}
+	log.Printf("Created Service %q.\n", svc_result1.GetObjectMeta().GetName())
 }
 
 func CreateAlertManagerService(clusterCfg ClusterConfig, clientset *kubernetes.Clientset) {
