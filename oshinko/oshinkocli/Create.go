@@ -69,6 +69,8 @@ func CreatePrometheus(config *rest.Config, sparkConfig *crd.SparkCluster, create
 		1,
 		map[string]string{
 			"app": "prometheus-" + sparkConfig.Spec.SparkMasterName,
+			"deployment-mode":"crd",
+			"clustername": sparkConfig.Name,
 		}, []apiv1.EnvVar{
 			{
 				Name:  "SPARK_MASTER_PROM_URI",
