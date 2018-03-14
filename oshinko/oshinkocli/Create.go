@@ -441,7 +441,7 @@ func CreateSparkClusterService(clusterCfg ClusterConfig, clientset *kubernetes.C
 
 	service1 := &v1.Service{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: clusterCfg.MasterSvcURI+"-ui",
+			Name: clusterCfg.ClusterName+"-ui",
 			Labels: map[string]string{
 				"app": "spark",
 			},

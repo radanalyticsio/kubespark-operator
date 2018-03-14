@@ -18,6 +18,7 @@ func DeleteAll(config *rest.Config, cluster *crd.SparkCluster) {
 	DeleteDeployment(config, cluster.Spec.SparkMasterName)
 	DeleteDeployment(config, cluster.Spec.SparkWorkerName)
 	DeleteService(config, cluster.Spec.SparkMasterName+SRV_SUFFIX)
+	DeleteService(config, cluster.Name+"-ui")
 	// Deleting Prometheus
 	if cluster.Spec.SparkMetrics == "prometheus"{
 
