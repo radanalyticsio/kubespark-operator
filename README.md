@@ -1,3 +1,9 @@
+# DEPRECATION NOTICE
+
+**This project is being deprecated, please see the
+[radanalyticsio/spark-operator](https://github.com/radanalyticsio/spark-operator)
+for a continuation of the goals expressed here.**
+
 # kubespark-operator
 
 Since kubernetes 1.7 CRD's were introduced to provide developers with a way to inherit all the features of kubernetes and build custom components on top. In this article I plan on introducing you to custom resource definitions and how you can utilize spark operator to manage your spark cluster on OpenShift.
